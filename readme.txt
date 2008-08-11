@@ -2,7 +2,7 @@
 Contributors: donncha
 Tags: wordpressmu, domain-mapping
 Tested up to: 2.6
-Stable tag: 0.2
+Stable tag: 0.3
 Requires at least: 1.5.1
 
 Map any blog on a WordPress MU website to an external domain.
