@@ -16,6 +16,7 @@ if( $domain_mapping_id ) {
 	$current_blog->domain = $_SERVER[ 'HTTP_HOST' ];
 	$current_blog->path = '/';
 	$current_blog->public = 1;
+	$blog_id = $domain_mapping_id;
 
 	define( 'COOKIE_DOMAIN', $_SERVER[ 'HTTP_HOST' ] );
 
