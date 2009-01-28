@@ -120,8 +120,6 @@ function dm_manage_page() {
 
 function domain_mapping_siteurl( $setting ) {
 	global $wpdb;
-	if( is_admin() )
-		return $setting;
 	$s = $wpdb->suppress_errors();
 	$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'" );
 	$wpdb->suppress_errors( $s );
