@@ -119,16 +119,27 @@ function dm_manage_page() {
 }
 
 function domain_mapping_siteurl( $setting ) {
-	global $wpdb;
+	global $wpdb, $current_blog;
 	$s = $wpdb->suppress_errors();
 	$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'" );
 	$wpdb->suppress_errors( $s );
 	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
 	if( $domain )
-		return $protocol . $domain;
+		return untrailingslashit( $protocol . $domain . $current_blog->path );
 
 	return $setting;
 }
 add_action( 'pre_option_siteurl', 'domain_mapping_siteurl' );
 add_action( 'pre_option_home', 'domain_mapping_siteurl' );
+
+function redirect_to_mapped_domain() {
+	global $current_blog;
+	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
+	$url = domain_mapping_siteurl( false );
+	if( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
+		wp_redirect( $url );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'redirect_to_mapped_domain' );
 ?>
