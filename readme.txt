@@ -10,7 +10,7 @@ Map any blog on a WordPress MU website to an external domain.
 == Description ==
 This plugin allows users of a WordPress MU site to map their blog to another domain.
 
-The user should go to Manage->Domain Mapping where they can add or delete domains.
+The user should go to Tools->Domain Mapping where they can add or delete domains.
 
 Remote login is not included in this release. A user can be logged in on the main site but not logged in on the domain mapped one, or may even be logged in as another user.
 
