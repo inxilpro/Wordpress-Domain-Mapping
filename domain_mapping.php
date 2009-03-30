@@ -84,6 +84,7 @@ function dm_manage_page() {
 	if( is_site_admin() ) {
 		echo '<h3>' . __( 'Site Admin Configuration' ) . '</h3>';
 		echo "<p>" . __( "As a site admin on this site you can set the IP address users need to point their DNS A records at. If you don't know what it is, ping this blog to get the IP address." ) . "</p>";
+		echo "<p>" . __( "If you use round robin DNS or another load balancing technique with more than one IP, enter each address, separating them by commas." ) . "</p>";
 		echo '<form method="POST">';
 		echo '<input type="hidden" name="action" value="ipaddress" />';
 		_e( "Server IP Address: " );
@@ -114,7 +115,12 @@ function dm_manage_page() {
 	echo "<input type='submit' value='Add' />";
 	echo "</form><br />";
 	echo "<p>" . __( 'If your domain name includes a hostname like "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL. "www" does not count because it will be removed from the domain name.' ) . "</p>";
-	echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: ' ) . "<strong>" . get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' ) . "</strong></p>";
+	$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
+	if( strpos( $dm_ipaddress, ',' ) ) {
+		echo "<p>" . __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
+	} else {
+		echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
+	}
 	echo "</div>";
 }
 
@@ -137,7 +143,7 @@ function redirect_to_mapped_domain() {
 	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
 	$url = domain_mapping_siteurl( false );
 	if( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
-		wp_redirect( $url );
+		wp_redirect( $url . $_SERVER[ 'REQUEST_URI' ] );
 		exit;
 	}
 }
