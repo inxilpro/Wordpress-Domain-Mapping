@@ -138,6 +138,16 @@ function domain_mapping_siteurl( $setting ) {
 add_action( 'pre_option_siteurl', 'domain_mapping_siteurl' );
 add_action( 'pre_option_home', 'domain_mapping_siteurl' );
 
+function redirect_admin_page() {
+	global $current_blog;
+	$url = domain_mapping_siteurl( 'url' );
+	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
+	if( strpos( $protocol . $_SERVER[ 'HTTP_HOST' ], $url ) === false ) {
+		wp_safe_redirect( $url . $_SERVER[ 'REQUEST_URI' ] );
+	}
+}
+add_action( 'admin_init', 'redirect_admin_page' );
+
 function redirect_to_mapped_domain() {
 	global $current_blog;
 	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
