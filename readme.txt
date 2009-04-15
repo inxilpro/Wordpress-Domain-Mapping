@@ -1,9 +1,10 @@
 === WordPress MU Domain Mapping ===
 Contributors: donncha
 Tags: wordpressmu, domain-mapping
-Tested up to: 2.6
-Stable tag: 0.3
+Tested up to: 2.7.1
+Stable tag: 0.4
 Requires at least: 1.5.1
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3244504
 
 Map any blog on a WordPress MU website to an external domain.
 
