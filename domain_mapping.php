@@ -140,9 +140,11 @@ add_action( 'pre_option_home', 'domain_mapping_siteurl' );
 
 function redirect_admin_page() {
 	global $current_blog;
-	$url = domain_mapping_siteurl( 'url' );
+	$url = domain_mapping_siteurl( 'NA' );
+	if ( $url == 'NA' )
+		return false;
 	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
-	if( strpos( $protocol . $_SERVER[ 'HTTP_HOST' ], $url ) === false ) {
+	if ( strpos( $protocol . $_SERVER[ 'HTTP_HOST' ], $url ) === false ) {
 		wp_safe_redirect( $url . $_SERVER[ 'REQUEST_URI' ] );
 	}
 }
