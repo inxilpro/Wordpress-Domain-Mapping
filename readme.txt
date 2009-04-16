@@ -2,14 +2,19 @@
 Contributors: donncha
 Tags: wordpressmu, domain-mapping
 Tested up to: 2.7.1
-Stable tag: 0.4
+Stable tag: 0.4.1
 Requires at least: 1.5.1
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=3244504
+Donate link: http://ocaoimh.ie/wordpress-plugins/gifts-and-donations/
 
 Map any blog on a WordPress MU website to an external domain.
 
 == Description ==
 This plugin allows users of a WordPress MU site to map their blog to another domain.
+
+= Recent Changes =
+
+0.4.1 - the admin pagesnon domain mapped blogs were redirected to an invalid url
+0.4 - redirect admin pages to the domain mapped url. Avoids problems with writing posts and image urls showing at the wrong url. Updated documentation on IP addresses for site admins.
 
 The user should go to Tools->Domain Mapping where they can add or delete domains. You, the site administrator must enter the IP or IP addresses (comma deliminated) of your server on this page. The addresses are purely for documentation purposes so the user knows what they are. They do nothing special in the plugin, they're only printed for the user to see.
 
