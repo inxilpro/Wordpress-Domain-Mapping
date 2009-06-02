@@ -56,7 +56,7 @@ function dm_manage_page() {
 		check_admin_referer( 'domain_mapping' );
 		switch( $_POST[ 'action' ] ) {
 			case "add":
-				if( null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) )
+				if( null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain'" ) && null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) )
 					$wpdb->query( "INSERT INTO {$wpdb->dmtable} ( `id` , `blog_id` , `domain` , `active` ) VALUES ( NULL, '" . intval( $wpdb->blogid ) . "', '$domain', '1')" );
 			break;
 			case "delete":
