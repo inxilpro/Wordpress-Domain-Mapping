@@ -25,18 +25,18 @@ Author URI: http://ocaoimh.ie/
 */
 
 function dm_add_pages() {
-	add_management_page('Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page');
+	add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
 }
-add_action('admin_menu', 'dm_add_pages');
+add_action( 'admin_menu', 'dm_add_pages' );
 
 function dm_manage_page() {
 	global $wpdb;
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
-	if( VHOST == 'no' ) {
+	if ( VHOST == 'no' ) {
 		die( 'Sorry, domain mapping only works on virtual host installs.' );
 	}
-	if( is_site_admin() ) {
+	if ( is_site_admin() ) {
 		if($wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtable}'") != $wpdb->dmtable) {
 			$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$wpdb->dmtable}` (
 				`id` bigint(20) NOT NULL auto_increment,
@@ -51,7 +51,7 @@ function dm_manage_page() {
 	}
 
 
-	if( !empty( $_POST[ 'action' ] ) ) {
+	if ( !empty( $_POST[ 'action' ] ) ) {
 		$domain = $wpdb->escape( preg_replace( "/^www\./", "", $_POST[ 'domain' ] ) );
 		check_admin_referer( 'domain_mapping' );
 		switch( $_POST[ 'action' ] ) {
@@ -69,19 +69,19 @@ function dm_manage_page() {
 		}
 	}
 	echo "<div class='wrap'><h2>Domain Mapping</h2>";
-	if( !file_exists( ABSPATH . '/wp-content/sunrise.php' ) ) {
+	if ( !file_exists( ABSPATH . '/wp-content/sunrise.php' ) ) {
 		echo "Please copy sunrise.php to " . ABSPATH . "/wp-content/sunrise.php and uncomment the SUNRISE definition in " . ABSPATH . "wp-config.php";
 		echo "</div>";
 		die();
 	}
 
-	if( !defined( 'SUNRISE' ) ) {
+	if ( !defined( 'SUNRISE' ) ) {
 		echo "Please uncomment the line <em>//define( 'SUNRISE', 'on' );</em> in your " . ABSPATH . "/wp-config.php";
 		echo "</div>";
 		die();
 	}
 
-	if( is_site_admin() ) {
+	if ( is_site_admin() ) {
 		echo '<h3>' . __( 'Site Admin Configuration' ) . '</h3>';
 		echo "<p>" . __( "As a site admin on this site you can set the IP address users need to point their DNS A records at. If you don't know what it is, ping this blog to get the IP address." ) . "</p>";
 		echo "<p>" . __( "If you use round robin DNS or another load balancing technique with more than one IP, enter each address, separating them by commas." ) . "</p>";
@@ -94,7 +94,7 @@ function dm_manage_page() {
 		echo "</form><br />";
 	}
 	$domains = $wpdb->get_results( "SELECT * FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'" );
-	if( is_array( $domains ) && !empty( $domains ) ) {
+	if ( is_array( $domains ) && !empty( $domains ) ) {
 		?><h3><?php _e( 'Active domains on this blog' ); ?></h3><?php
 		foreach( $domains as $details ) {
 			echo '<form method="POST">';
@@ -116,7 +116,7 @@ function dm_manage_page() {
 	echo "</form><br />";
 	echo "<p>" . __( 'If your domain name includes a hostname like "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL. "www" does not count because it will be removed from the domain name.' ) . "</p>";
 	$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
-	if( strpos( $dm_ipaddress, ',' ) ) {
+	if ( strpos( $dm_ipaddress, ',' ) ) {
 		echo "<p>" . __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
 	} else {
 		echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
@@ -130,7 +130,7 @@ function domain_mapping_siteurl( $setting ) {
 	$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'" );
 	$wpdb->suppress_errors( $s );
 	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
-	if( $domain )
+	if ( $domain )
 		return untrailingslashit( $protocol . $domain . $current_blog->path );
 
 	return $setting;
@@ -156,7 +156,7 @@ function redirect_to_mapped_domain() {
 	global $current_blog;
 	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
 	$url = domain_mapping_siteurl( false );
-	if( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
+	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 		wp_redirect( $url . $_SERVER[ 'REQUEST_URI' ] );
 		exit;
 	}
@@ -164,40 +164,39 @@ function redirect_to_mapped_domain() {
 add_action( 'template_redirect', 'redirect_to_mapped_domain' );
 
 // delete mapping if blog is deleted
-function delete_blog_domain_mapping($blog_id, $drop) {
+function delete_blog_domain_mapping( $blog_id, $drop ) {
 	global $wpdb;
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
-	if($blog_id && $drop) {
-		$query = $wpdb->prepare("DELETE FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id);
-		$wpdb->query( $query );
+	if ( $blog_id && $drop ) {
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id ) );
 	}
 }
-add_action('delete_blog', 'delete_blog_domain_mapping', 1, 2);
+add_action( 'delete_blog', 'delete_blog_domain_mapping', 1, 2 );
 
 // show mapping on site admin blogs screen
-function ra_domain_mapping_columns($columns) {
-	$columns[	'map'] = __('Mapping');
+function ra_domain_mapping_columns( $columns ) {
+	$columns[ 'map' ] = __( 'Mapping' );
 	return $columns;
 }
-add_filter('wpmu_blogs_columns', 'ra_domain_mapping_columns'); 
+add_filter( 'wpmu_blogs_columns', 'ra_domain_mapping_columns' );
 
-function ra_domain_mapping_field($column, $blog_id) {
+function ra_domain_mapping_field( $column, $blog_id ) {
 	global $wpdb;
 	static $maps = false;
 	
-	if($column == 'map') {
-		if($maps === false) {
+	if ( $column == 'map' ) {
+		if ( $maps === false ) {
 			$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
-			$work = $wpdb->get_results("SELECT blog_id, domain FROM {$wpdb->dmtable} ORDER BY blog_id");
+			$work = $wpdb->get_results( "SELECT blog_id, domain FROM {$wpdb->dmtable} ORDER BY blog_id" );
 			$maps = array();
 			if($work) {
-				foreach($work as $blog) {
-					$maps[$blog->blog_id] = $blog->domain;
+				foreach( $work as $blog ) {
+					$maps[ $blog->blog_id ] = $blog->domain;
 				}
 			}
 		}
-		echo $maps[$blog_id];
+		echo $maps[ $blog_id ];
 	}
 }
-add_action('manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3);
+add_action( 'manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3 );
 ?>
