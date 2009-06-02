@@ -135,8 +135,10 @@ function domain_mapping_siteurl( $setting ) {
 
 	return $setting;
 }
-add_action( 'pre_option_siteurl', 'domain_mapping_siteurl' );
-add_action( 'pre_option_home', 'domain_mapping_siteurl' );
+if ( defined( 'DOMAIN_MAPPING' ) ) {
+	add_action( 'pre_option_siteurl', 'domain_mapping_siteurl' );
+	add_action( 'pre_option_home', 'domain_mapping_siteurl' );
+}
 
 function redirect_admin_page() {
 	global $current_blog;
@@ -160,4 +162,42 @@ function redirect_to_mapped_domain() {
 	}
 }
 add_action( 'template_redirect', 'redirect_to_mapped_domain' );
+
+// delete mapping if blog is deleted
+function delete_blog_domain_mapping($blog_id, $drop) {
+	global $wpdb;
+	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
+	if($blog_id && $drop) {
+		$query = $wpdb->prepare("DELETE FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id);
+		$wpdb->query( $query );
+	}
+}
+add_action('delete_blog', 'delete_blog_domain_mapping', 1, 2);
+
+// show mapping on site admin blogs screen
+function ra_domain_mapping_columns($columns) {
+	$columns[	'map'] = __('Mapping');
+	return $columns;
+}
+add_filter('wpmu_blogs_columns', 'ra_domain_mapping_columns'); 
+
+function ra_domain_mapping_field($column, $blog_id) {
+	global $wpdb;
+	static $maps = false;
+	
+	if($column == 'map') {
+		if($maps === false) {
+			$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
+			$work = $wpdb->get_results("SELECT blog_id, domain FROM {$wpdb->dmtable} ORDER BY blog_id");
+			$maps = array();
+			if($work) {
+				foreach($work as $blog) {
+					$maps[$blog->blog_id] = $blog->domain;
+				}
+			}
+		}
+		echo $maps[$blog_id];
+	}
+}
+add_action('manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3);
 ?>
