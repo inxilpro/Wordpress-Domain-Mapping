@@ -156,22 +156,30 @@ function domain_mapping_siteurl( $setting ) {
 
 	return $setting;
 }
-if ( defined( 'DOMAIN_MAPPING' ) ) {
-	add_action( 'pre_option_siteurl', 'domain_mapping_siteurl' );
-	add_action( 'pre_option_home', 'domain_mapping_siteurl' );
-}
 
-function redirect_admin_page() {
-	global $current_blog;
+function domain_mapping_post_content( $post_content ) {
+	global $wpdb;
+
+	static $orig_urls = array();
+	if ( ! isset( $orig_urls[ $wpdb->blog_id ] ) ) {
+		remove_filter( 'pre_option_siteurl', 'domain_mapping_siteurl' );
+		$orig_url = get_option( 'siteurl' );
+		$orig_urls[ $wpdb->blog_id ] = $orig_url;
+		add_filter( 'pre_option_siteurl', 'domain_mapping_siteurl' );
+	} else {
+		$orig_url = $orig_urls[ $wpdb->blog_id ];
+	}
 	$url = domain_mapping_siteurl( 'NA' );
 	if ( $url == 'NA' )
-		return false;
-	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
-	if ( strpos( $protocol . $_SERVER[ 'HTTP_HOST' ], $url ) === false ) {
-		wp_safe_redirect( $url . $_SERVER[ 'REQUEST_URI' ] );
-	}
+		return $url;
+	return str_replace( $orig_url, $url, $post_content );
 }
-add_action( 'admin_init', 'redirect_admin_page' );
+
+if ( defined( 'DOMAIN_MAPPING' ) ) {
+	add_filter( 'pre_option_siteurl', 'domain_mapping_siteurl' );
+	add_filter( 'pre_option_home', 'domain_mapping_siteurl' );
+	add_filter( 'the_content', 'domain_mapping_post_content' );
+}
 
 function redirect_to_mapped_domain() {
 	global $current_blog;
