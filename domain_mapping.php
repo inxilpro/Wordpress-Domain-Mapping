@@ -76,7 +76,7 @@ function dm_manage_page() {
 	}
 
 	if ( !defined( 'SUNRISE' ) ) {
-		echo "Please uncomment the line <em>//define( 'SUNRISE', 'on' );</em> in your " . ABSPATH . "/wp-config.php";
+		echo "Please uncomment the line <em>//define( 'SUNRISE', 'on' );</em> in your " . ABSPATH . "wp-config.php";
 		echo "</div>";
 		die();
 	}
@@ -126,12 +126,33 @@ function dm_manage_page() {
 
 function domain_mapping_siteurl( $setting ) {
 	global $wpdb, $current_blog;
-	$s = $wpdb->suppress_errors();
-	$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'" );
-	$wpdb->suppress_errors( $s );
-	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
-	if ( $domain )
-		return untrailingslashit( $protocol . $domain . $current_blog->path );
+
+	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
+	static $return_url = array();
+
+	if ( !isset( $return_url[ $wpdb->blogid ] ) ) {
+		$s = $wpdb->suppress_errors();
+
+		// Try matching on the current URL domain and blog first. This will take priorty.
+		$domain = $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE domain = %s AND blog_id = %d LIMIT 1", preg_replace( "/^www\./", "", $_SERVER[ 'HTTP_HOST' ] ), $wpdb->blogid ) );
+
+		// If no match, then try against the blog ID alone (which we get, without a 'preferred domain' setting,
+		// will be a matter of luck.
+		if ( empty( $domain ) ) {
+			$domain = $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = %d", $wpdb->blogid ) );
+		}
+
+		$wpdb->suppress_errors( $s );
+		$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
+		if ( $domain ) {
+			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain . $current_blog->path );
+			$setting = $return_url[ $wpdb->blogid ];
+		} else {
+			$return_url[ $wpdb->blogid ] = false;
+		}
+	} elseif ( $return_url[ $wpdb->blogid ] !== FALSE) {
+		$setting = $return_url[ $wpdb->blogid ];
+	}
 
 	return $setting;
 }
