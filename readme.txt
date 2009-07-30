@@ -2,7 +2,7 @@
 Contributors: donncha
 Tags: wordpressmu, domain-mapping
 Tested up to: 2.8.2
-Stable tag: 0.4.2
+Stable tag: 0.4.3
 Requires at least: 1.5.1
 Donate link: http://ocaoimh.ie/wordpress-plugins/gifts-and-donations/
 
@@ -19,6 +19,9 @@ If your user is mapping a hostname of a domain like www.example.com or blog.exam
 Remote login is not included in this release. A user can be logged in on the main site but not logged in on the domain mapped one, or may even be logged in as another user.
 
 == Changelog ==
+
+= 0.4.3 =
+* Fixed bug in content filtering, VHOST check done in admin page, not sunrise.php now.
 
 = 0.4.2 =
 * Some actions are actually filters
