@@ -171,7 +171,7 @@ function domain_mapping_post_content( $post_content ) {
 	}
 	$url = domain_mapping_siteurl( 'NA' );
 	if ( $url == 'NA' )
-		return $url;
+		return $post_content;
 	return str_replace( $orig_url, $url, $post_content );
 }
 
