@@ -229,4 +229,16 @@ function ra_domain_mapping_field( $column, $blog_id ) {
 	}
 }
 add_action( 'manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3 );
+
+// fixes the plugins_url 
+function domain_map_plugins_uri( $full_url, $path=NULL, $plugin=NULL ) {
+	return get_option( 'siteurl' ) . substr( $full_url, stripos( $full_url, PLUGINDIR ) - 1 );
+}
+add_filter( 'plugins_url', 'domain_map_plugins_uri', 1 );
+
+function domain_map_themes_uri( $full_url ) {
+	return get_option( 'siteurl' ) . substr( $full_url, stripos( $full_url, "/wp-content/themes" ) );
+}
+add_filter( 'theme_root_uri', 'domain_map_themes_uri', 1 );
+
 ?>
