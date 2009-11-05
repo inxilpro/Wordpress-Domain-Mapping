@@ -8,7 +8,7 @@ Author: Donncha O Caoimh
 Author URI: http://ocaoimh.ie/
 */
 /*  Copyright Donncha O Caoimh (http://ocaoimh.ie/)
-    With contributions by Ron Rennick and others.
+    With contributions by Ron Rennick(http://wpmututorials.com/), Greg Sidberry and others.
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
