@@ -36,10 +36,6 @@ add_action( 'admin_menu', 'dm_add_pages' );
 function maybe_create_db() {
 	global $wpdb;
 
-	if ( VHOST == 'no' ) {
-		die( 'Sorry, domain mapping only works on virtual host installs.' );
-	}
-
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 	if ( is_site_admin() ) {
 		if($wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtable}'") != $wpdb->dmtable) {
@@ -81,7 +77,7 @@ function dm_admin_page() {
 	echo "<input type='text' name='ipaddress' value='" . get_site_option( 'dm_ipaddress' ) . "' /><br />";
 	echo "<input type='checkbox' name='permanent_redirect' value='1' ";
 	echo get_site_option( 'dm_301_redirect' ) == 1 ? "checked='checked'" : "";
-	echo "' /> Permanent redirect.<br />";
+	echo "' /> Permanent redirect. (better for your blogger's pagerank)<br />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
@@ -226,7 +222,7 @@ function domain_mapping_siteurl( $setting ) {
 		$wpdb->suppress_errors( $s );
 		$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
 		if ( $domain ) {
-			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain . $current_blog->path );
+			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain  );
 			$setting = $return_url[ $wpdb->blogid ];
 		} else {
 			$return_url[ $wpdb->blogid ] = false;
@@ -279,6 +275,9 @@ function redirect_to_mapped_domain() {
 	$url = domain_mapping_siteurl( false );
 	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
+		if ( constant( "VHOST" ) != 'yes' ) {
+			$_SERVER[ 'REQUEST_URI' ] = str_replace( $current_blog->path, '/', $_SERVER[ 'REQUEST_URI' ] );
+		}
 		header( "Location: {$url}{$_SERVER[ 'REQUEST_URI' ]}", true, $redirect );
 		exit;
 	}

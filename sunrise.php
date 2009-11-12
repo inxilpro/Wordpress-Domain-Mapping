@@ -1,6 +1,5 @@
 <?php
 // let the site admin page catch the VHOST == 'no'
-if( VHOST == 'yes' ) {
 $wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
 $wpdb->suppress_errors();
@@ -18,6 +17,5 @@ if( $domain_mapping_id ) {
 
 	$current_site = $wpdb->get_row( "SELECT * from {$wpdb->site} WHERE id = '{$current_blog->site_id}' LIMIT 0,1" );
 	define( 'DOMAIN_MAPPING', 1 );
-}
 }
 ?>
