@@ -36,9 +36,13 @@ add_action( 'admin_menu', 'dm_add_pages' );
 function maybe_create_db() {
 	global $wpdb;
 
+	get_dm_hash(); // initialise the remote login hash
+
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
+	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
 	if ( is_site_admin() ) {
-		if($wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtable}'") != $wpdb->dmtable) {
+		$created = 0;
+		if ( $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtable}'") != $wpdb->dmtable ) {
 			$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$wpdb->dmtable}` (
 				`id` bigint(20) NOT NULL auto_increment,
 				`blog_id` bigint(20) NOT NULL,
@@ -47,6 +51,19 @@ function maybe_create_db() {
 				PRIMARY KEY  (`id`),
 				KEY `blog_id` (`blog_id`,`domain`,`active`)
 			);" );
+			$created = 1;
+		}
+		if ( $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtablelogins}'") != $wpdb->dmtablelogins ) {
+			$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$wpdb->dmtablelogins}` (
+				`id` int(5) NOT NULL auto_increment,
+				`user_id` bigint(20) NOT NULL,
+				`blog_id` bigint(20) NOT NULL,
+				`t` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+				PRIMARY KEY  (`id`)
+			);" );
+			$created = 1;
+		}
+		if ( $created ) {
 			?> <div id="message" class="updated fade"><p><strong><?php _e('Domain mapping database table created.') ?></strong></p></div> <?php
 		}
 	}
@@ -234,22 +251,36 @@ function domain_mapping_siteurl( $setting ) {
 	return $setting;
 }
 
-function domain_mapping_post_content( $post_content ) {
+// url is siteurl or home
+function get_original_url( $url ) {
 	global $wpdb;
 
 	static $orig_urls = array();
 	if ( ! isset( $orig_urls[ $wpdb->blog_id ] ) ) {
-		remove_filter( 'pre_option_siteurl', 'domain_mapping_siteurl' );
-		$orig_url = get_option( 'siteurl' );
+		remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
+		$orig_url = get_option( $url );
 		$orig_urls[ $wpdb->blog_id ] = $orig_url;
-		add_filter( 'pre_option_siteurl', 'domain_mapping_siteurl' );
-	} else {
-		$orig_url = $orig_urls[ $wpdb->blog_id ];
+		add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
 	}
+	return $orig_urls[ $wpdb->blog_id ];
+}
+
+function domain_mapping_post_content( $post_content ) {
+	global $wpdb;
+
+	$orig_url = get_original_url( 'siteurl' );
+
 	$url = domain_mapping_siteurl( 'NA' );
 	if ( $url == 'NA' )
 		return $post_content;
 	return str_replace( $orig_url, $url, $post_content );
+}
+
+function redirect_admin_to_orig() {
+	$url = get_original_url( 'siteurl' );
+	if ( $url != site_url() ) {
+		wp_redirect( trailingslashit( $url ) . 'wp-admin/' );
+	}
 }
 
 // fixes the plugins_url 
@@ -267,7 +298,11 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_filter( 'pre_option_siteurl', 'domain_mapping_siteurl' );
 	add_filter( 'pre_option_home', 'domain_mapping_siteurl' );
 	add_filter( 'the_content', 'domain_mapping_post_content' );
+	add_action( 'wp_head', 'remote_login_js_loader' );
+	add_action( 'admin_init', 'redirect_admin_to_orig' );
 }
+if ( $_GET[ 'dm' ] )
+	add_action( 'template_redirect', 'remote_login_js' );
 
 function redirect_to_mapped_domain() {
 	global $current_blog, $wpdb;
@@ -283,6 +318,52 @@ function redirect_to_mapped_domain() {
 	}
 }
 add_action( 'template_redirect', 'redirect_to_mapped_domain' );
+
+function get_dm_hash() {
+	$remote_login_hash = get_site_option( 'dm_hash' );
+	if ( null == $remote_login_hash ) {
+		$remote_login_hash = md5( time() );
+		update_site_option( 'dm_hash', $remote_login_hash );
+	}
+	return $remote_login_hash;
+}
+
+function remote_login_js() {
+	global $current_blog, $current_user, $wpdb;
+	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
+	$hash = get_dm_hash();
+	if ( $_GET[ 'dm' ] == $hash ) {
+		$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
+		if ( $_GET[ 'action' ] == 'load' ) {
+			if ( !is_user_logged_in() )
+				exit;
+			$wpdb->insert( $wpdb->dmtablelogins, array( 'user_id' => $current_user->ID, 'blog_id' => $_GET[ 'blogid' ], 't' => time() ) );
+			$key = $wpdb->insert_id;
+			$url = add_query_arg( array( 'action' => 'login', 'dm' => $hash, 'k' => $key, 't' => mt_rand() ), $_GET[ 'back' ] );
+			echo "window.location = '$url'";
+			exit;
+		} elseif( $_GET[ 'action' ] == 'login' ) {
+			if ( $details = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtablelogins} WHERE id = %d AND blog_id = %d", $_GET[ 'k' ], $wpdb->blogid ) ) ) {
+				if ( $details->blog_id == $wpdb->blogid ) {
+					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtablelogins} WHERE id = %d", $_GET[ 'k' ] ) );
+					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtablelogins} WHERE t < %d", ( time() - 600 ) ) ); // remote logins survive for only 10 minutes if not used.
+					wp_set_auth_cookie( $details->user_id );
+					wp_redirect( remove_query_arg( array( 'dm', 'action', 'k', 't', $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) ) );
+					exit;
+				}
+			}
+		}
+	}
+}
+
+function remote_login_js_loader() {
+	global $current_site, $current_blog;
+	if ( is_user_logged_in() )
+		return false;
+	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
+	$hash = get_dm_hash();
+	echo "<script src='{$protocol}{$current_site->domain}{$current_site->path}?dm={$hash}&action=load&blogid={$current_blog->blog_id}&siteid={$current_blog->site_id}&t=" . mt_rand() . "&back=" . urlencode( $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) . "' type='text/javascript'></script>";
+}
 
 // delete mapping if blog is deleted
 function delete_blog_domain_mapping( $blog_id, $drop ) {
