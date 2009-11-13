@@ -303,6 +303,21 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 }
 if ( $_GET[ 'dm' ] )
 	add_action( 'template_redirect', 'remote_login_js' );
+if ( $_GET[ 'loggedout' ] )
+	add_action( 'login_head', 'remote_logout_js_loader' );
+
+function remote_logout_js_loader() {
+	global $current_site, $current_blog, $wpdb;
+	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
+	if ( is_user_logged_in() )
+		return false;
+	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
+	$hash = get_dm_hash();
+	$wpdb->insert( $wpdb->dmtablelogins, array( 'user_id' => 0, 'blog_id' => $current_blog->blog_id, 't' => time() ) );
+	$key = $wpdb->insert_id;
+	$url = "{$protocol}{$current_site->domain}{$current_site->path}?dm={$hash}&action=logout&blogid={$current_blog->blog_id}&k={$key}&t=" . mt_rand();
+	echo "<img src='$url' height=1 width=1 />";
+}
 
 function redirect_to_mapped_domain() {
 	global $current_blog, $wpdb;
@@ -342,7 +357,7 @@ function remote_login_js() {
 			$url = add_query_arg( array( 'action' => 'login', 'dm' => $hash, 'k' => $key, 't' => mt_rand() ), $_GET[ 'back' ] );
 			echo "window.location = '$url'";
 			exit;
-		} elseif( $_GET[ 'action' ] == 'login' ) {
+		} elseif ( $_GET[ 'action' ] == 'login' ) {
 			if ( $details = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtablelogins} WHERE id = %d AND blog_id = %d", $_GET[ 'k' ], $wpdb->blogid ) ) ) {
 				if ( $details->blog_id == $wpdb->blogid ) {
 					$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtablelogins} WHERE id = %d", $_GET[ 'k' ] ) );
@@ -352,6 +367,12 @@ function remote_login_js() {
 					exit;
 				}
 			}
+		} elseif ( $_GET[ 'action' ] == 'logout' ) {
+			if ( $details = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtablelogins} WHERE id = %d AND blog_id = %d", $_GET[ 'k' ], $_GET[ 'blogid' ] ) ) ) {
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtablelogins} WHERE id = %d", $_GET[ 'k' ] ) );
+				wp_clear_auth_cookie();
+			}
+			exit;
 		}
 	}
 }
