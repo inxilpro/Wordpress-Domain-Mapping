@@ -283,6 +283,17 @@ function redirect_admin_to_orig() {
 	}
 }
 
+function redirect_login_to_orig() {
+	if ( $_GET[ 'action' ] == 'logout' || isset( $_GET[ 'loggedout' ] ) ) {
+		return false;
+	}
+	$url = get_original_url( 'siteurl' );
+	if ( $url != site_url() ) {
+		$url .= "/wp-login.php";
+		echo "<script type='text/javascript'>\nwindow.location = '$url'</script>";
+	}
+}
+
 // fixes the plugins_url 
 function domain_mapping_plugins_uri( $full_url, $path=NULL, $plugin=NULL ) {
 	return get_option( 'siteurl' ) . substr( $full_url, stripos( $full_url, PLUGINDIR ) - 1 );
@@ -300,23 +311,21 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_filter( 'the_content', 'domain_mapping_post_content' );
 	add_action( 'wp_head', 'remote_login_js_loader' );
 	add_action( 'admin_init', 'redirect_admin_to_orig' );
+	add_action( 'login_head', 'redirect_login_to_orig' );
+	add_action( 'wp_logout', 'remote_logout_loader', 9999 );
 }
 if ( $_GET[ 'dm' ] )
 	add_action( 'template_redirect', 'remote_login_js' );
-if ( $_GET[ 'loggedout' ] )
-	add_action( 'login_head', 'remote_logout_js_loader' );
 
-function remote_logout_js_loader() {
+function remote_logout_loader() {
 	global $current_site, $current_blog, $wpdb;
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
-	if ( is_user_logged_in() )
-		return false;
 	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
 	$hash = get_dm_hash();
 	$wpdb->insert( $wpdb->dmtablelogins, array( 'user_id' => 0, 'blog_id' => $current_blog->blog_id, 't' => time() ) );
 	$key = $wpdb->insert_id;
-	$url = "{$protocol}{$current_site->domain}{$current_site->path}?dm={$hash}&action=logout&blogid={$current_blog->blog_id}&k={$key}&t=" . mt_rand();
-	echo "<img src='$url' height=1 width=1 />";
+	wp_redirect( $protocol . $current_site->domain . $current_site->path . "?dm={$hash}&action=logout&blogid={$current_blog->blog_id}&k={$key}&t=" . mt_rand() );
+	exit;
 }
 
 function redirect_to_mapped_domain() {
@@ -347,8 +356,8 @@ function remote_login_js() {
 	global $current_blog, $current_user, $wpdb;
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
 	$hash = get_dm_hash();
+	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
 	if ( $_GET[ 'dm' ] == $hash ) {
-		$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
 		if ( $_GET[ 'action' ] == 'load' ) {
 			if ( !is_user_logged_in() )
 				exit;
@@ -370,7 +379,9 @@ function remote_login_js() {
 		} elseif ( $_GET[ 'action' ] == 'logout' ) {
 			if ( $details = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtablelogins} WHERE id = %d AND blog_id = %d", $_GET[ 'k' ], $_GET[ 'blogid' ] ) ) ) {
 				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtablelogins} WHERE id = %d", $_GET[ 'k' ] ) );
+				$blog = get_blog_details( $_GET[ 'blogid' ] );
 				wp_clear_auth_cookie();
+				wp_redirect( trailingslashit( $blog->siteurl ) . "wp-login.php?loggedout=true" );
 			}
 			exit;
 		}
