@@ -82,6 +82,7 @@ function dm_admin_page() {
 		if ( $_POST[ 'action' ] == 'update' ) {
 			add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
 			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
+			add_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
 		}
 	}
 
@@ -95,6 +96,9 @@ function dm_admin_page() {
 	echo "<input type='checkbox' name='permanent_redirect' value='1' ";
 	echo get_site_option( 'dm_301_redirect' ) == 1 ? "checked='checked'" : "";
 	echo "' /> Permanent redirect. (better for your blogger's pagerank)<br />";
+	echo "<input type='checkbox' name='always_redirect_admin' value='1' ";
+	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
+	echo "' /> Redirect administration pages to original blog's domain<br />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
@@ -120,17 +124,23 @@ function dm_manage_page() {
 					$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `id` , `blog_id` , `domain` , `active` ) VALUES ( NULL, %d, %s, %d )", $wpdb->blogid, $domain, $_POST[ 'primary' ] ) );
 				}
 			break;
-			case "delete":
-				$wpdb->query( "DELETE FROM {$wpdb->dmtable} WHERE domain = '$domain'" );
-			break;
 			case "primary":
 				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
-				if( $domain != 'original' ) {
+				$orig_url = parse_url( get_original_url( 'siteurl' ) );
+				if( $domain != $orig_url[ 'host' ] ) {
 					$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 1 WHERE domain = %s", $domain ) );
 				}
 			break;
 		}
+	} elseif( $_GET[ 'action' ] == 'delete' ) {
+		$domain = $wpdb->escape( preg_replace( "/^www\./", "", $_GET[ 'domain' ] ) );
+		if ( $domain == '' ) {
+			wp_die( "You must enter a domain" );
+		}
+		check_admin_referer( "delete" . $_GET['domain'] );
+		$wpdb->query( "DELETE FROM {$wpdb->dmtable} WHERE domain = '$domain'" );
 	}
+
 	echo "<div class='wrap'><h2>Domain Mapping</h2>";
 	if ( !file_exists( ABSPATH . '/wp-content/sunrise.php' ) ) {
 		if ( is_site_admin() ) {
@@ -162,45 +172,39 @@ function dm_manage_page() {
 		return false;
 	}
 
-	$domains = $wpdb->get_results( "SELECT * FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'" );
+	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
+	$domains = $wpdb->get_results( "SELECT * FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'", ARRAY_A );
 	if ( is_array( $domains ) && !empty( $domains ) ) {
+		$orig_url = parse_url( get_original_url( 'siteurl' ) );
+		$domains[] = array( 'domain' => $orig_url[ 'host' ], 'path' => $orig_url[ 'path' ], 'active' => 0 );
 		?><h3><?php _e( 'Active domains on this blog' ); ?></h3>
-		<table><tr><th>Domain</th><th>Primary</th><th>Delete</th><th>Make Primary</th></tr>
+		<table><tr><th></th><th>Domain</th><th>Primary</th><th>Delete</th></tr>
 		<?php
 		$primary_found = 0;
+		echo '<form method="POST">';
 		foreach( $domains as $details ) {
-			echo "<tr><td>{$details->domain}</td><td style='text-align: center'><strong>";
-			echo $details->active == 0 ? "No" : "Yes";
-			echo "</strong></td><td>";
-			echo '<form method="POST">';
-			echo '<input type="hidden" name="action" value="delete" />';
-			echo "<input type='hidden' name='domain' value='{$details->domain}' />";
-			echo "<input type='submit' value='Delete' />";
-			wp_nonce_field( 'domain_mapping' );
-			echo "</form></td><td>";
-			if ( 0 == $primary_found && $details->active == 0 ) {
-				echo '<form method="POST">';
-				echo '<input type="hidden" name="action" value="primary" />';
-				echo "<input type='hidden' name='domain' value='{$details->domain}' />";
-				echo "<input type='submit' value='Make Primary' />";
-				wp_nonce_field( 'domain_mapping' );
-				echo "</form>";
+			if ( 0 == $primary_found && $details[ 'domain' ] == $orig_url[ 'host' ] ) {
+				$details[ 'active' ] = 1;
 			}
+			echo "<tr><td>";
+			echo "<input type='radio' name='domain' value='{$details[ 'domain' ]}' ";
+			if ( $details[ 'active' ] == 1 )
+				echo "checked='1' ";
+			echo "/>";
+			echo "</td><td>{$protocol}{$details[ 'domain' ]}{$details[ 'path' ]}</td><td style='text-align: center'><strong>";
+			echo $details[ 'active' ] == 0 ? "No" : "Yes";
+			echo "</strong></td><td>";
+			if ( $details[ 'domain' ] != $orig_url[ 'host' ] )
+				echo "<a href='" . wp_nonce_url( "?page=domainmapping&action=delete&domain={$details[ 'domain' ]}", "delete" . $details[ 'domain' ] ) . "'>Del</a>";
 			echo "</td></tr>";
 			if ( 0 == $primary_found )
-				$primary_found = $details->active;
+				$primary_found = $details[ 'active' ];
 		}
 		?></table><?php
-		if ( $primary_found == 0 ) {
-			echo "<h3>Primary Domain disabled</h3><p>Your blog will answer on every domain listed, including the original blog url.</p>";
-		} else {
-			echo '<form method="POST">';
-			echo '<input type="hidden" name="action" value="primary" />';
-			echo "<input type='hidden' name='domain' value='original' />";
-			echo "<input type='submit' value='Disable Primary Domain Checking' />";
-			wp_nonce_field( 'domain_mapping' );
-			echo "</form>";
-		}
+		echo '<input type="hidden" name="action" value="primary" />';
+		echo "<input type='submit' value='Set Primary Domain' />";
+		wp_nonce_field( 'domain_mapping' );
+		echo "</form>";
 	}
 	echo "<h3>" . __( 'Add new domain' ) . "</h3>";
 	echo '<form method="POST">';
@@ -229,11 +233,11 @@ function domain_mapping_siteurl( $setting ) {
 	if ( !isset( $return_url[ $wpdb->blogid ] ) ) {
 		$s = $wpdb->suppress_errors();
 
-		// get primary domain 
+		// get primary domain, if we don't have one then return original url.
 		$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
 		if ( null == $domain ) {
-			// Try matching on the current URL domain and blog.
-			$domain = $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE domain = %s AND blog_id = %d LIMIT 1", preg_replace( "/^www\./", "", $_SERVER[ 'HTTP_HOST' ] ), $wpdb->blogid ) );
+			$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( "siteurl" ) );
+			return $return_url[ $wpdb->blogid ];
 		}
 
 		$wpdb->suppress_errors( $s );
@@ -256,13 +260,12 @@ function get_original_url( $url ) {
 	global $wpdb;
 
 	static $orig_urls = array();
-	if ( ! isset( $orig_urls[ $wpdb->blog_id ] ) ) {
+	if ( ! isset( $orig_urls[ $wpdb->blogid ] ) ) {
 		remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
-		$orig_url = get_option( $url );
-		$orig_urls[ $wpdb->blog_id ] = $orig_url;
+		$orig_urls[ $wpdb->blogid ] = get_option( $url );
 		add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
 	}
-	return $orig_urls[ $wpdb->blog_id ];
+	return $orig_urls[ $wpdb->blogid ];
 }
 
 function domain_mapping_post_content( $post_content ) {
@@ -277,6 +280,9 @@ function domain_mapping_post_content( $post_content ) {
 }
 
 function redirect_admin_to_orig() {
+	if ( !get_site_option( 'dm_redirect_admin' ) )
+		return false;
+
 	$url = get_original_url( 'siteurl' );
 	if ( $url != site_url() ) {
 		wp_redirect( trailingslashit( $url ) . 'wp-admin/' );
