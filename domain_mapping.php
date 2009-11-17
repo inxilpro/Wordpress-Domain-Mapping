@@ -285,12 +285,14 @@ function redirect_admin() {
 		$url = get_original_url( 'siteurl' );
 		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
 			wp_redirect( trailingslashit( $url ) . 'wp-admin/' );
+			exit;
 		}
 	} else {
 		// redirect original url to mapped domain
 		$url = domain_mapping_siteurl( false );
 		if ( $url != site_url() )
 			wp_redirect( trailingslashit( $url ) . '?dm_gotoadmin=1' );
+			exit;
 	}
 }
 
@@ -324,7 +326,7 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_action( 'login_head', 'redirect_login_to_orig' );
 	add_action( 'wp_logout', 'remote_logout_loader', 9999 );
 	if ( isset( $_GET[ 'dm_gotoadmin' ] ) )
-		add_action( 'template_redirect', 'redirect_to_admin' );
+		add_action( 'init', 'redirect_to_admin' );
 }
 add_action( 'admin_init', 'redirect_admin' );
 if ( isset( $_GET[ 'dm' ] ) )
@@ -333,6 +335,7 @@ if ( isset( $_GET[ 'dm' ] ) )
 function redirect_to_admin() {
 	if ( isset( $_GET[ 'dm_gotoadmin' ] ) && is_user_logged_in() ) {
 		wp_redirect( site_url( "wp-admin/" ) );
+		exit;
 	}
 }
 
