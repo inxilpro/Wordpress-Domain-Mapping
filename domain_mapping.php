@@ -279,13 +279,18 @@ function domain_mapping_post_content( $post_content ) {
 	return str_replace( $orig_url, $url, $post_content );
 }
 
-function redirect_admin_to_orig() {
-	if ( !get_site_option( 'dm_redirect_admin' ) )
-		return false;
-
-	$url = get_original_url( 'siteurl' );
-	if ( $url != site_url() ) {
-		wp_redirect( trailingslashit( $url ) . 'wp-admin/' );
+function redirect_admin() {
+	if ( get_site_option( 'dm_redirect_admin' ) ) {
+		// redirect mapped domain admin page to original url
+		$url = get_original_url( 'siteurl' );
+		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
+			wp_redirect( trailingslashit( $url ) . 'wp-admin/' );
+		}
+	} else {
+		// redirect original url to mapped domain
+		$url = domain_mapping_siteurl( false );
+		if ( $url != site_url() )
+			wp_redirect( trailingslashit( $url ) . 'wp-admin/' );
 	}
 }
 
@@ -316,10 +321,10 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_filter( 'pre_option_home', 'domain_mapping_siteurl' );
 	add_filter( 'the_content', 'domain_mapping_post_content' );
 	add_action( 'wp_head', 'remote_login_js_loader' );
-	add_action( 'admin_init', 'redirect_admin_to_orig' );
 	add_action( 'login_head', 'redirect_login_to_orig' );
 	add_action( 'wp_logout', 'remote_logout_loader', 9999 );
 }
+add_action( 'admin_init', 'redirect_admin' );
 if ( $_GET[ 'dm' ] )
 	add_action( 'template_redirect', 'remote_login_js' );
 
