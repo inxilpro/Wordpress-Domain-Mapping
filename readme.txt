@@ -1,7 +1,7 @@
 === WordPress MU Domain Mapping ===
 Contributors: donncha
 Tags: wordpressmu, domain-mapping
-Tested up to: 2.8.2
+Tested up to: 2.8.6
 Stable tag: 0.4.3
 Requires at least: 1.5.1
 Donate link: http://ocaoimh.ie/wordpress-plugins/gifts-and-donations/
@@ -14,9 +14,19 @@ This plugin allows users of a WordPress MU site to map their blog to another dom
 Site administrators must configure the plugin in Site Admin->Domain Mapping. You must enter the IP or IP addresses (comma deliminated) of your server on this page. The addresses are purely for documentation purposes so the user knows what they are (so users can set up their DNS correctly). They do nothing special in the plugin, they're only printed for the user to see.
 
 Your users should go to Tools->Domain Mapping where they can add or delete domains. One domain must be set as the primary domain for the blog. When mapping a domain, (like 'example.com') your users must create an A record in their DNS pointing at that IP address. They should use multiple A records if your server uses more than one IP address.
-If your user is mapping a hostname of a domain (or sometimes called a "subdomain") like www.example.com or blog.example.com it's sufficient to create a CNAME record pointing at their blog url (NOT IP address).
+If your user is mapping a hostname of a domain (sometimes called a "subdomain") like www.example.com or blog.example.com it's sufficient to create a CNAME record pointing at their blog url (NOT IP address).
+
+The login page will (almost) always redirect back to the original blog's domain for login to ensure the user is logged in on the original site as well as the domain mapped one.
 
 == Changelog ==
+
+= 0.5 =
+* Works in VHOST or folder based installs now.
+* Remote login added.
+* Admin backend redirects to mapped domain by default but can redirect to original blog url.
+* Domain redirect can be 301 or 302.
+* Bug fixes: set blog_id of the current site's main blog in $current_site
+* Bug fixes: cache domain maps correctly, blogid, not blog_id in $wpdb.
 
 = 0.4.3 =
 * Fixed bug in content filtering, VHOST check done in admin page, not sunrise.php now.
