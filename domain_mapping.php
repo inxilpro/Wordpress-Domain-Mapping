@@ -95,7 +95,7 @@ function dm_admin_page() {
 	echo "<input type='text' name='ipaddress' value='" . get_site_option( 'dm_ipaddress' ) . "' /><br />";
 	echo "<input type='checkbox' name='permanent_redirect' value='1' ";
 	echo get_site_option( 'dm_301_redirect' ) == 1 ? "checked='checked'" : "";
-	echo "' /> Permanent redirect. (better for your blogger's pagerank)<br />";
+	echo " /> Permanent redirect. (better for your blogger's pagerank)<br />";
 	echo "<input type='checkbox' name='always_redirect_admin' value='1' ";
 	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
 	echo "' /> Redirect administration pages to original blog's domain<br />";
