@@ -290,9 +290,10 @@ function redirect_admin() {
 	} else {
 		// redirect original url to mapped domain
 		$url = domain_mapping_siteurl( false );
-		if ( $url != site_url() )
+		if ( $url != site_url() ) {
 			wp_redirect( trailingslashit( $url ) . '?dm_gotoadmin=1' );
 			exit;
+		}
 	}
 }
 
@@ -396,7 +397,11 @@ function remote_login_js() {
 					wp_set_auth_cookie( $details->user_id );
 					wp_redirect( remove_query_arg( array( 'dm', 'action', 'k', 't', $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) ) );
 					exit;
+				} else {
+					wp_die( "Incorrect or out of date login key" );
 				}
+			} else {
+				wp_die( "Unknown login key" );
 			}
 		} elseif ( $_GET[ 'action' ] == 'logout' ) {
 			if ( $details = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtablelogins} WHERE id = %d AND blog_id = %d", $_GET[ 'k' ], $_GET[ 'blogid' ] ) ) ) {
@@ -404,8 +409,10 @@ function remote_login_js() {
 				$blog = get_blog_details( $_GET[ 'blogid' ] );
 				wp_clear_auth_cookie();
 				wp_redirect( trailingslashit( $blog->siteurl ) . "wp-login.php?loggedout=true" );
+				exit;
+			} else {
+				wp_die( "Unknown logout key" );
 			}
-			exit;
 		}
 	}
 }
