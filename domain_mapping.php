@@ -98,7 +98,7 @@ function dm_admin_page() {
 	echo " /> Permanent redirect. (better for your blogger's pagerank)<br />";
 	echo "<input type='checkbox' name='always_redirect_admin' value='1' ";
 	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
-	echo "' /> Redirect administration pages to original blog's domain<br />";
+	echo " /> Redirect administration pages to original blog's domain<br />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
