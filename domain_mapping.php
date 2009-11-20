@@ -105,10 +105,8 @@ function dm_admin_page() {
 	_e( 'The information you enter here will be shown to your users so they can configure their DNS correctly.' );
 }
 
-function dm_manage_page() {
+function dm_handle_actions() {
 	global $wpdb;
-	maybe_create_db();
-
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		$domain = $wpdb->escape( preg_replace( "/^www\./", "", $_POST[ 'domain' ] ) );
 		if ( $domain == '' ) {
@@ -122,6 +120,11 @@ function dm_manage_page() {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
 					}
 					$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `id` , `blog_id` , `domain` , `active` ) VALUES ( NULL, %d, %s, %d )", $wpdb->blogid, $domain, $_POST[ 'primary' ] ) );
+					wp_redirect( '?page=domainmapping&updated=add' );
+					exit;
+				} else {
+					wp_redirect( '?page=domainmapping&updated=exists' );
+					exit;
 				}
 			break;
 			case "primary":
@@ -130,6 +133,8 @@ function dm_manage_page() {
 				if( $domain != $orig_url[ 'host' ] ) {
 					$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 1 WHERE domain = %s", $domain ) );
 				}
+				wp_redirect( '?page=domainmapping&updated=primary' );
+				exit;
 			break;
 		}
 	} elseif( $_GET[ 'action' ] == 'delete' ) {
@@ -139,8 +144,35 @@ function dm_manage_page() {
 		}
 		check_admin_referer( "delete" . $_GET['domain'] );
 		$wpdb->query( "DELETE FROM {$wpdb->dmtable} WHERE domain = '$domain'" );
+		wp_redirect( '?page=domainmapping&updated=del' );
+		exit;
 	}
 
+}
+if ( $_GET[ 'page' ] == 'domainmapping' )
+	add_action( 'admin_init', 'dm_handle_actions' );
+
+function dm_manage_page() {
+	global $wpdb;
+	maybe_create_db();
+
+	if ( isset( $_GET[ 'updated' ] ) ) {
+		switch( $_GET[ 'updated' ] ) {
+			case "add":
+				$msg = __( 'New domain added.', 'wordpress-mu-domain-mapping' );
+				break;
+			case "exists":
+				$msg = __( 'New domain already exists.', 'wordpress-mu-domain-mapping' );
+				break;
+			case "primary":
+				$msg = __( 'New primary domain.', 'wordpress-mu-domain-mapping' );
+				break;
+			case "del":
+				$msg = __( 'Domain deleted.', 'wordpress-mu-domain-mapping' );
+				break;
+		}
+		echo "<div class='updated fade'><p>$msg</p></div>";
+	}
 	echo "<div class='wrap'><h2>Domain Mapping</h2>";
 	if ( !file_exists( ABSPATH . '/wp-content/sunrise.php' ) ) {
 		if ( is_site_admin() ) {
@@ -178,7 +210,7 @@ function dm_manage_page() {
 		$orig_url = parse_url( get_original_url( 'siteurl' ) );
 		$domains[] = array( 'domain' => $orig_url[ 'host' ], 'path' => $orig_url[ 'path' ], 'active' => 0 );
 		?><h3><?php _e( 'Active domains on this blog' ); ?></h3>
-		<table><tr><th></th><th>Domain</th><th>Primary</th><th>Delete</th></tr>
+		<table><tr><th>Primary</th><th>Domain</th><th>Delete</th></tr>
 		<?php
 		$primary_found = 0;
 		echo '<form method="POST">';
@@ -191,11 +223,11 @@ function dm_manage_page() {
 			if ( $details[ 'active' ] == 1 )
 				echo "checked='1' ";
 			echo "/>";
-			echo "</td><td>{$protocol}{$details[ 'domain' ]}{$details[ 'path' ]}</td><td style='text-align: center'><strong>";
-			echo $details[ 'active' ] == 0 ? "No" : "Yes";
-			echo "</strong></td><td>";
-			if ( $details[ 'domain' ] != $orig_url[ 'host' ] )
+			$url = "{$protocol}{$details[ 'domain' ]}{$details[ 'path' ]}";
+			echo "</td><td><a href='$url'>$url</a></td><td style='text-align: center'>";
+			if ( $details[ 'domain' ] != $orig_url[ 'host' ] && $details[ 'active' ] != 1 ) {
 				echo "<a href='" . wp_nonce_url( "?page=domainmapping&action=delete&domain={$details[ 'domain' ]}", "delete" . $details[ 'domain' ] ) . "'>Del</a>";
+			}
 			echo "</td></tr>";
 			if ( 0 == $primary_found )
 				$primary_found = $details[ 'active' ];
@@ -205,6 +237,7 @@ function dm_manage_page() {
 		echo "<input type='submit' value='Set Primary Domain' />";
 		wp_nonce_field( 'domain_mapping' );
 		echo "</form>";
+		echo "<p>" . __( "* The primary domain cannot be deleted." ) . "</p>";
 	}
 	echo "<h3>" . __( 'Add new domain' ) . "</h3>";
 	echo '<form method="POST">';
@@ -279,7 +312,7 @@ function domain_mapping_post_content( $post_content ) {
 	return str_replace( $orig_url, $url, $post_content );
 }
 
-function redirect_admin() {
+function dm_redirect_admin() {
 	if ( get_site_option( 'dm_redirect_admin' ) ) {
 		// redirect mapped domain admin page to original url
 		$url = get_original_url( 'siteurl' );
@@ -331,7 +364,7 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 }
 if ( isset( $_GET[ 'dm_gotoadmin' ] ) )
 	add_action( 'init', 'redirect_to_admin', 9999 );
-add_action( 'admin_init', 'redirect_admin' );
+add_action( 'admin_init', 'dm_redirect_admin' );
 if ( isset( $_GET[ 'dm' ] ) )
 	add_action( 'template_redirect', 'remote_login_js' );
 
