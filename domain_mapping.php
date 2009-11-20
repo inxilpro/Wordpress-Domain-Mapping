@@ -284,14 +284,16 @@ function redirect_admin() {
 		// redirect mapped domain admin page to original url
 		$url = get_original_url( 'siteurl' );
 		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
-			wp_redirect( trailingslashit( $url ) . 'wp-admin/' );
+			wp_redirect( untrailingslashit( $url ) . $_SERVER[ 'REQUEST_URI' ] );
 			exit;
 		}
 	} else {
-		// redirect original url to mapped domain
+		global $current_blog;
+		// redirect original url to primary domain
 		$url = domain_mapping_siteurl( false );
-		if ( $url != site_url() ) {
-			wp_redirect( trailingslashit( $url ) . '?dm_gotoadmin=1' );
+		$request_uri = str_replace( $current_blog->path, '/', $_SERVER[ 'REQUEST_URI' ] );
+		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
+			wp_redirect( trailingslashit( $url ) . '?dm_gotoadmin=1&back=' . urlencode( $request_uri ) );
 			exit;
 		}
 	}
@@ -326,16 +328,16 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_action( 'wp_head', 'remote_login_js_loader' );
 	add_action( 'login_head', 'redirect_login_to_orig' );
 	add_action( 'wp_logout', 'remote_logout_loader', 9999 );
-	if ( isset( $_GET[ 'dm_gotoadmin' ] ) )
-		add_action( 'init', 'redirect_to_admin' );
 }
+if ( isset( $_GET[ 'dm_gotoadmin' ] ) )
+	add_action( 'init', 'redirect_to_admin', 9999 );
 add_action( 'admin_init', 'redirect_admin' );
 if ( isset( $_GET[ 'dm' ] ) )
 	add_action( 'template_redirect', 'remote_login_js' );
 
 function redirect_to_admin() {
 	if ( isset( $_GET[ 'dm_gotoadmin' ] ) && is_user_logged_in() ) {
-		wp_redirect( site_url( "wp-admin/" ) );
+		wp_redirect( site_url( $_GET[ 'back' ] ) );
 		exit;
 	}
 }
