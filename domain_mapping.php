@@ -306,7 +306,7 @@ function get_original_url( $url ) {
 function domain_mapping_adminurl( $url ) {
 	$index = strpos( $url, '/wp-admin' );
 	if( $index !== false )
-		$url = get_original_url( 'home' ) . substr( $url, $index );
+		$url = get_original_url( 'siteurl' ) . substr( $url, $index );
 	return $url;
 }
 
@@ -370,9 +370,9 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_action( 'wp_head', 'remote_login_js_loader' );
 	add_action( 'login_head', 'redirect_login_to_orig' );
 	add_action( 'wp_logout', 'remote_logout_loader', 9999 );
-}
-add_filter( 'admin_url', 'domain_mapping_adminurl' );
-	
+} else {
+	add_filter( 'admin_url', 'domain_mapping_adminurl' );
+}	
 if ( isset( $_GET[ 'dm_gotoadmin' ] ) )
 	add_action( 'init', 'redirect_to_admin', 9999 );
 add_action( 'admin_init', 'dm_redirect_admin' );
