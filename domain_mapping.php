@@ -294,11 +294,20 @@ function get_original_url( $url ) {
 
 	static $orig_urls = array();
 	if ( ! isset( $orig_urls[ $wpdb->blogid ] ) ) {
-		remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
+		if ( defined( 'DOMAIN_MAPPING' ) ) 
+			remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
 		$orig_urls[ $wpdb->blogid ] = get_option( $url );
-		add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
+		if ( defined( 'DOMAIN_MAPPING' ) ) 
+			add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
 	}
 	return $orig_urls[ $wpdb->blogid ];
+}
+
+function domain_mapping_adminurl( $url ) {
+	$index = strpos( $url, '/wp-admin' );
+	if( $index !== false )
+		$url = get_original_url( 'home' ) . substr( $url, $index );
+	return $url;
 }
 
 function domain_mapping_post_content( $post_content ) {
@@ -362,6 +371,8 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_action( 'login_head', 'redirect_login_to_orig' );
 	add_action( 'wp_logout', 'remote_logout_loader', 9999 );
 }
+add_filter( 'admin_url', 'domain_mapping_adminurl' );
+	
 if ( isset( $_GET[ 'dm_gotoadmin' ] ) )
 	add_action( 'init', 'redirect_to_admin', 9999 );
 add_action( 'admin_init', 'dm_redirect_admin' );
@@ -489,11 +500,15 @@ function ra_domain_mapping_field( $column, $blog_id ) {
 			$maps = array();
 			if($work) {
 				foreach( $work as $blog ) {
-					$maps[ $blog->blog_id ] = $blog->domain;
+					$maps[ $blog->blog_id ][] = $blog->domain;
 				}
 			}
 		}
-		echo $maps[ $blog_id ];
+		if(is_array( $maps[ $blog_id ] ) && count( $maps[ $blog_id ] )) {
+			foreach( $maps[ $blog_id ] as $blog ) {
+				echo $blog . '<br />';
+			}
+		}
 	}
 }
 add_action( 'manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3 );

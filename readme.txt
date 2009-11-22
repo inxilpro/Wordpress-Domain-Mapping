@@ -25,6 +25,7 @@ The login page will (almost) always redirect back to the original blog's domain 
 * Remote login added.
 * Admin backend redirects to mapped domain by default but can redirect to original blog url.
 * Domain redirect can be 301 or 302.
+* List multiple mapped domains on site admin blogs page if mapped
 * Bug fixes: set blog_id of the current site's main blog in $current_site
 * Bug fixes: cache domain maps correctly, blogid, not blog_id in $wpdb.
 
