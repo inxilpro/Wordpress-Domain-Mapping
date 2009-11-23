@@ -358,7 +358,7 @@ function domain_mapping_plugins_uri( $full_url, $path=NULL, $plugin=NULL ) {
 }
 
 function domain_mapping_themes_uri( $full_url ) {
-	return get_option( 'siteurl' ) . substr( $full_url, stripos( $full_url, "/wp-content/themes" ) );
+	return str_replace( get_original_url ( 'siteurl' ), get_option( 'siteurl' ), $full_url );
 }
 
 if ( defined( 'DOMAIN_MAPPING' ) ) {
