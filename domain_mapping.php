@@ -26,7 +26,10 @@ Author URI: http://ocaoimh.ie/
 */
 
 function dm_add_pages() {
-	add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
+	global $current_site, $wpdb;
+	if( constant( 'VHOST' ) == 'yes' || $current_site->blog_id != $wpdb->blogid ) {
+		add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
+	}
 	if( is_site_admin() ) {
 		add_submenu_page('wpmu-admin.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
 	}
