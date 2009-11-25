@@ -74,11 +74,15 @@ function maybe_create_db() {
 }
 
 function dm_admin_page() {
-	global $wpdb;
-	maybe_create_db();
+	global $wpdb, $current_site;
 	if ( false == is_site_admin() ) { // paranoid? moi?
 		return false;
 	}
+
+	if ( $current_site->path != "/" ) {
+		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress MU is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
+	}
+	maybe_create_db();
 
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		check_admin_referer( 'domain_mapping' );
