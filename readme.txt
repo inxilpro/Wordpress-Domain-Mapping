@@ -1,9 +1,9 @@
 === WordPress MU Domain Mapping ===
-Contributors: donncha
+Contributors: donncha, wpmuguru
 Tags: wordpressmu, domain-mapping
 Tested up to: 2.8.6
-Stable tag: 0.4.3
-Requires at least: 1.5.1
+Stable tag: 0.5
+Requires at least: 2.8.6
 Donate link: http://ocaoimh.ie/wordpress-plugins/gifts-and-donations/
 
 Map any blog on a WordPress MU website to an external domain.
@@ -16,7 +16,7 @@ Site administrators must configure the plugin in Site Admin->Domain Mapping. You
 Your users should go to Tools->Domain Mapping where they can add or delete domains. One domain must be set as the primary domain for the blog. When mapping a domain, (like 'example.com') your users must create an A record in their DNS pointing at that IP address. They should use multiple A records if your server uses more than one IP address.
 If your user is mapping a hostname of a domain (sometimes called a "subdomain") like www.example.com or blog.example.com it's sufficient to create a CNAME record pointing at their blog url (NOT IP address).
 
-The login page will (almost) always redirect back to the original blog's domain for login to ensure the user is logged in on the original site as well as the domain mapped one.
+The login page will almost always redirect back to the original blog's domain for login to ensure the user is logged in on the original site as well as the domain mapped one.
 
 == Changelog ==
 
