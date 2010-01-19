@@ -18,6 +18,17 @@ If your user is mapping a hostname of a domain (sometimes called a "subdomain") 
 
 The login page will almost always redirect back to the original blog's domain for login to ensure the user is logged in on the original site as well as the domain mapped one.
 
+Site admins can now choose to either allow users to setup DNS ANAME records by supplying an IP (or list of IP addresses) or set a CNAME but not both (entering a CNAME for the end user voids the use of IP's)
+
+There is a lot of debate on the handling of DNS using CNAME and ANAME so both methods are available depending on your preference and setup.
+
+Things to remember:
+
+* CNAME records that point to other CNAME records should be avoided (RFC 1034 section 5.2.2) so only tell your end users to use your chosen domain name as their CNAME DNS entry if your domain name is an ANAME to an IP address (or addresses)
+* Giving your user the option to just use your chosen domain name and not an IP (or list of IP's) to set as their CNAME will make administration of your WordPressMU blog platform easier, an example of this would be purchacing/deploying a new server or indeed adding more servers to use in a round robin scenario. Your end users have no need to worry about IP address changes.
+* Finally, telling your end users to use an ANAME IP or CNAME domain name is up to you and how your systems are deployed.
+* Further Reading: http://www.faqs.org/rfcs/rfc2219.html
+
 == Changelog ==
 
 = 0.5 =
@@ -53,5 +64,105 @@ The login page will almost always redirect back to the original blog's domain fo
 2. Copy domain_mapping.php into wp-content/mu-plugins/.
 3. Edit wp-config.php and uncomment the SUNRISE definition line:
     `define( 'SUNRISE', 'on' );`
-4. As a "site admin", visit Site Admin->Domain Mapping to create the domain mapping database table and set the server IP address.
+4. As a "site admin", visit Site Admin->Domain Mapping to create the domain mapping database table and set the server IP address or a domain to point CNAME records at.
 5. Make sure the default Apache virtual host points at your WordPress MU site so it will handle unknown domains correctly. (Need info on cpanel, etc. How do you get them to respond to any domain?)
+6. Do not define COOKIE_DOMAIN in your wp-config.php as it conflicts with logins on your mapped domains.
+
+== Action Hooks ==
+You can now hook into certain parts of the domain_mapping mu-plugin to enable you to extend the features that are built in without the need to modify this plugin. To do this, just create a script within the mu-plugins dir that is called AFTER this plugin (eg, call it domain_mapping_extended.php).
+	
+* `dm_echo_updated_msg`
+		
+This hook is for when you want to add extra messages for your end users when they update their settings, the current usage would be to remove the existing action and replace it with your own as shown within the example further down the page.
+		
+* `dm_handle_actions_init`
+	
+Before we add our own handlers for our users wanting to update their mappings, we can use this action to maybe connect to your datacenter API ready for communication.  An example would be to load an API class and connect before we send and recieve XML queries. Once again, see the example down the page. Your function can make use of the $domain variable.
+	
+* `dm_handle_actions_add`
+		
+When an user adds a domain name to their mappings, this action can be used to perform other tasks on your server.  An example would be to check the user has already set up the DNS records for the name to correctly point to your server.  Your function can make use of the $domain variable.
+		
+* `dm_handle_actions_primary`
+	
+This may or may not be commonly used in most cases but is there just in case. Your function can make use of the $domain variable.
+		
+* `dm_handle_actions_del`
+	
+When an user deletes one of their domain mappings, this action can be used to reverse what dm_handle_actions_add has done.  An example would be to remove the domain mapping from your server using your datacenter's API.  Your function can make use of the $domain variable.
+		
+* `dm_delete_blog_domain_mappings`
+	
+If the blog is ever deleted and you make use of handle_actions, then this action will enable you to tidy up.  An example would be when an user has set up multiple domain mappings and the blog is deleted, your function can remove any mess left behind.  Your function can make use of the $domains array (numbered array of domains).  NOTE, this will also be called if the user has no mappings, care should be taken in the case of an empty array.
+		
+= EXAMPLE USAGE =
+		
+`<?php // Filename: mu-plugins/domain_mapping_extended.php
+
+
+// NOTE,
+// 	This example will not 'just work' for anyone, it is to show basic
+//	usage of dm_echo_updated_msg, dm_handle_actions_init and
+//	dm_handle_actions_add
+
+
+// We do not need translations but would really like a message when a
+// users DNS entry is not ready
+
+function dm_echo_extended_updated_msg() {
+	switch( $_GET[ 'updated' ] ) {
+		case "add":
+			$msg = 'You have added a new domain name.';
+			break;
+		case "exists":
+			$msg = 'That domain name already exists, please try again.';
+			break;
+		case "primary":
+			$msg = 'New primary domain created - enjoy!';
+			break;
+		case "del":
+			$msg = 'The domain name has been removed.';
+			break;
+		case "dnslookup":
+			$msg = 'The domain is not pointing to ' .
+			get_site_option( 'dm_cname' ) . ', please set up your DNS.';
+		break;
+	}
+	echo "<div class='updated fade'><p>$msg</p></div>";
+}
+// REMOVE THE ORIGINAL MESSAGES
+remove_action('dm_echo_updated_msg','dm_echo_default_updated_msg');
+// REPLACE WITH OUR OWN
+add_action('dm_echo_updated_msg','dm_echo_extended_updated_msg');
+	
+
+// Prepare to use our Datacenter API
+
+function dm_extended_handle_actions_init($domain) {
+	global $datacenter_api;
+	// There is a good chance we will be accessing the datacentre API
+	require_once(dirname(__FILE__) ."/classes/xmlAbstract.class.php");
+	require_once(dirname(__FILE__) ."/classes/xmlParserClass.php");
+	require_once(dirname(__FILE__) ."/classes/datacenterAPIClass.php");
+	$datacenter_api = new datacenter_api('MY_API_KEY', 'API_TYPE');
+}
+$datacenter_api = null;
+add_action('dm_handle_actions_init', 'dm_extended_handle_actions_init');
+
+
+// Check the users DNS is ready to go (we are using the CNAME option)
+// then add the mapping to the datacenter API
+
+function dm_extended_handle_actions_add($domain) {
+	global $datacenter_api;
+	// Check the domain has the correct CNAME/ANAME record
+	$dmip = gethostbyname(get_site_option( 'dm_cname' ));
+	$urip = gethostbyname($domain);
+	if ($dmip != $urip) {
+		wp_redirect( '?page=domainmapping&updated=dnslookup' );
+		exit;
+	}
+	$datacenter_api->add_mapping($domain);
+}
+add_action('dm_handle_actions_add', 'dm_extended_handle_actions_add');
+?>`

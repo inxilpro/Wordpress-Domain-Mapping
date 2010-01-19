@@ -36,6 +36,29 @@ function dm_add_pages() {
 }
 add_action( 'admin_menu', 'dm_add_pages' );
 
+// Default Messages for the users Domain Mapping management page
+// This can now be replaced by using:
+// remove_action('dm_echo_updated_msg','dm_echo_default_updated_msg');
+// add_action('dm_echo_updated_msg','my_custom_updated_msg_function');
+function dm_echo_default_updated_msg() {
+	switch( $_GET[ 'updated' ] ) {
+		case "add":
+			$msg = __( 'New domain added.', 'wordpress-mu-domain-mapping' );
+			break;
+		case "exists":
+			$msg = __( 'New domain already exists.', 'wordpress-mu-domain-mapping' );
+			break;
+		case "primary":
+			$msg = __( 'New primary domain.', 'wordpress-mu-domain-mapping' );
+			break;
+		case "del":
+			$msg = __( 'Domain deleted.', 'wordpress-mu-domain-mapping' );
+			break;
+	}
+	echo "<div class='updated fade'><p>$msg</p></div>";
+}
+add_action('dm_echo_updated_msg','dm_echo_default_updated_msg');
+
 function maybe_create_db() {
 	global $wpdb;
 
@@ -88,18 +111,26 @@ function dm_admin_page() {
 		check_admin_referer( 'domain_mapping' );
 		if ( $_POST[ 'action' ] == 'update' ) {
 			add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+			add_site_option( 'dm_cname', $_POST[ 'cname' ] );
 			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
 			add_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
 		}
 	}
 
 	echo '<h3>' . __( 'Domain Mapping Configuration' ) . '</h3>';
-	echo "<p>" . __( "As a site admin on this site you can set the IP address users need to point their DNS A records at. If you don't know what it is, ping this blog to get the IP address." ) . "</p>";
-	echo "<p>" . __( "If you use round robin DNS or another load balancing technique with more than one IP, enter each address, separating them by commas." ) . "</p>";
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="update" />';
+	echo "<p>" . __( "As a site admin on this site you can set the IP address users need to point their DNS A records at <em>or</em> the domain to point CNAME record at. If you don't know what the IP address is, ping this blog to get it." ) . "</p>";
+	echo "<p>" . __( "If you use round robin DNS or another load balancing technique with more than one IP, enter each address, separating them by commas." ) . "</p>";
 	_e( "Server IP Address: " );
 	echo "<input type='text' name='ipaddress' value='" . get_site_option( 'dm_ipaddress' ) . "' /><br />";
+
+	// Using a CNAME is a safer method than using IP adresses for some people (IMHO)
+	echo "<p>" . __( "If you prefer the use of a CNAME record, you can set the domain here." ) . "</p>";
+	echo "<p>" . __( "NOTE, this voids the use of any IP address set above" ) . "</p>";
+	_e( "Server CNAME domain: " );
+	echo "<input type='text' name='cname' value='" . get_site_option( 'dm_cname' ) . "' /><br />";
+
 	echo "<input type='checkbox' name='permanent_redirect' value='1' ";
 	echo get_site_option( 'dm_301_redirect' ) == 1 ? "checked='checked'" : "";
 	echo " /> Permanent redirect. (better for your blogger's pagerank)<br />";
@@ -120,8 +151,10 @@ function dm_handle_actions() {
 			wp_die( "You must enter a domain" );
 		}
 		check_admin_referer( 'domain_mapping' );
+		do_action('dm_handle_actions_init', $domain);
 		switch( $_POST[ 'action' ] ) {
 			case "add":
+				do_action('dm_handle_actions_add', $domain);
 				if( null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain'" ) && null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) ) {
 					if ( $_POST[ 'primary' ] ) {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
@@ -135,6 +168,7 @@ function dm_handle_actions() {
 				}
 			break;
 			case "primary":
+				do_action('dm_handle_actions_primary', $domain);
 				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
 				$orig_url = parse_url( get_original_url( 'siteurl' ) );
 				if( $domain != $orig_url[ 'host' ] ) {
@@ -150,6 +184,7 @@ function dm_handle_actions() {
 			wp_die( "You must enter a domain" );
 		}
 		check_admin_referer( "delete" . $_GET['domain'] );
+		do_action('dm_handle_actions_del', $domain);
 		$wpdb->query( "DELETE FROM {$wpdb->dmtable} WHERE domain = '$domain'" );
 		wp_redirect( '?page=domainmapping&updated=del' );
 		exit;
@@ -164,21 +199,7 @@ function dm_manage_page() {
 	maybe_create_db();
 
 	if ( isset( $_GET[ 'updated' ] ) ) {
-		switch( $_GET[ 'updated' ] ) {
-			case "add":
-				$msg = __( 'New domain added.', 'wordpress-mu-domain-mapping' );
-				break;
-			case "exists":
-				$msg = __( 'New domain already exists.', 'wordpress-mu-domain-mapping' );
-				break;
-			case "primary":
-				$msg = __( 'New primary domain.', 'wordpress-mu-domain-mapping' );
-				break;
-			case "del":
-				$msg = __( 'Domain deleted.', 'wordpress-mu-domain-mapping' );
-				break;
-		}
-		echo "<div class='updated fade'><p>$msg</p></div>";
+		do_action('dm_echo_updated_msg');
 	}
 	echo "<div class='wrap'><h2>Domain Mapping</h2>";
 	if ( !file_exists( ABSPATH . '/wp-content/sunrise.php' ) ) {
@@ -201,9 +222,9 @@ function dm_manage_page() {
 		return false;
 	}
 
-	if ( false == get_site_option( 'dm_ipaddress' ) ) {
+	if ( false == get_site_option( 'dm_ipaddress' ) && false == get_site_option( 'dm_cname' ) ) {
 		if ( is_site_admin() ) {
-			echo "Please set the IP address of your server in the <a href='wpmu-admin.php?page=dm_admin_page'>site admin page</a>.";
+			echo "Please set the IP address or CNAME of your server in the <a href='wpmu-admin.php?page=dm_admin_page'>site admin page</a>.";
 		} else {
 			echo "This plugin has not been configured correctly yet.";
 		}
@@ -254,12 +275,18 @@ function dm_manage_page() {
 	echo "<input type='checkbox' name='primary' value='1' /> Primary domain for this blog<br />";
 	echo "<input type='submit' value='Add' />";
 	echo "</form><br />";
-	echo "<p>" . __( 'If your domain name includes a hostname like "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL. "www" does not count because it will be removed from the domain name.' ) . "</p>";
-	$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
-	if ( strpos( $dm_ipaddress, ',' ) ) {
-		echo "<p>" . __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
+	
+	if ( get_site_option( 'dm_cname' ) ) {
+		$dm_cname = get_site_option( 'dm_cname');
+		echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "CNAME" record pointing to the following domain name for this server: ' ) . "<strong>" . $dm_cname . "</strong></p>";
 	} else {
-		echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
+		echo "<p>" . __( 'If your domain name includes a hostname like "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL. "www" does not count because it will be removed from the domain name.' ) . "</p>";
+		$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
+		if ( strpos( $dm_ipaddress, ',' ) ) {
+			echo "<p>" . __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
+		} else {
+			echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
+		}
 	}
 	echo "</div>";
 }
@@ -484,6 +511,10 @@ function delete_blog_domain_mapping( $blog_id, $drop ) {
 	global $wpdb;
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 	if ( $blog_id && $drop ) {
+		// Get an array of domain names to pass onto any delete_blog_domain_mapping actions
+		$domains = $wpdb->get_col( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id ) );
+		do_action('dm_delete_blog_domain_mappings', $domains);
+		
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id ) );
 	}
 }
