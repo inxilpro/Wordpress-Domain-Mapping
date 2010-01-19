@@ -25,6 +25,7 @@ There is a lot of debate on the handling of DNS using CNAME and ANAME so both me
 Things to remember:
 
 * CNAME records that point to other CNAME records should be avoided (RFC 1034 section 5.2.2) so only tell your end users to use your chosen domain name as their CNAME DNS entry if your domain name is an ANAME to an IP address (or addresses)
+* Only use the CNAME method if your main domain is an ANAME of an IP address. This is very important. How do you know? Check your dns or ask your hosting company.
 * Giving your user the option to just use your chosen domain name and not an IP (or list of IP's) to set as their CNAME will make administration of your WordPressMU blog platform easier, an example of this would be purchacing/deploying a new server or indeed adding more servers to use in a round robin scenario. Your end users have no need to worry about IP address changes.
 * Finally, telling your end users to use an ANAME IP or CNAME domain name is up to you and how your systems are deployed.
 * Further Reading: http://www.faqs.org/rfcs/rfc2219.html

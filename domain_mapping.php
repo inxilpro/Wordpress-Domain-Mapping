@@ -126,7 +126,7 @@ function dm_admin_page() {
 	echo "<input type='text' name='ipaddress' value='" . get_site_option( 'dm_ipaddress' ) . "' /><br />";
 
 	// Using a CNAME is a safer method than using IP adresses for some people (IMHO)
-	echo "<p>" . __( "If you prefer the use of a CNAME record, you can set the domain here." ) . "</p>";
+	echo "<p>" . __( "If you prefer the use of a CNAME record, you can set the domain here. This domain must be configured with an A record or ANAME pointing at an IP address. Visitors may experience problems if it is a CNAME of another domain." ) . "</p>";
 	echo "<p>" . __( "NOTE, this voids the use of any IP address set above" ) . "</p>";
 	_e( "Server CNAME domain: " );
 	echo "<input type='text' name='cname' value='" . get_site_option( 'dm_cname' ) . "' /><br />";
@@ -279,6 +279,7 @@ function dm_manage_page() {
 	if ( get_site_option( 'dm_cname' ) ) {
 		$dm_cname = get_site_option( 'dm_cname');
 		echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "CNAME" record pointing to the following domain name for this server: ' ) . "<strong>" . $dm_cname . "</strong></p>";
+		echo "<p>" . __( 'Google have published <a href="http://www.google.com/support/blogger/bin/answer.py?hl=en&answer=58317" target="_blank">instructions</a> for creating CNAME records on various hosting platforms such as GoDaddy and others.' ) . "</p>";
 	} else {
 		echo "<p>" . __( 'If your domain name includes a hostname like "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL. "www" does not count because it will be removed from the domain name.' ) . "</p>";
 		$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
