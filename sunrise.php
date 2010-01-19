@@ -1,4 +1,9 @@
 <?php
+
+if ( defined( 'COOKIE_DOMAIN' ) ) {
+	die( 'The constant "COOKIE_DOMAIN" is defined (probably in wp-config.php). Please remove or comment out that define() line.' );
+}
+
 // let the site admin page catch the VHOST == 'no'
 $wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
