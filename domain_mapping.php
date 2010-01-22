@@ -405,6 +405,13 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_action( 'wp_head', 'remote_login_js_loader' );
 	add_action( 'login_head', 'redirect_login_to_orig' );
 	add_action( 'wp_logout', 'remote_logout_loader', 9999 );
+
+	add_filter( 'stylesheet_uri', 'domain_mapping_post_content' );
+	add_filter( 'stylesheet_directory', 'domain_mapping_post_content' );
+	add_filter( 'stylesheet_directory_uri', 'domain_mapping_post_content' );
+	add_filter( 'template_directory', 'domain_mapping_post_content' );
+	add_filter( 'template_directory_uri', 'domain_mapping_post_content' );
+	add_filter( 'plugins_url', 'domain_mapping_post_content' );
 } else {
 	add_filter( 'admin_url', 'domain_mapping_adminurl' );
 }	
