@@ -32,6 +32,12 @@ Things to remember:
 
 == Changelog ==
 
+= 0.5.1 =
+* Added Cpanel instructions, props Marty Martin (http://mearis.com)
+* Filter more urls, props Ryan Waggoner (http://ryanwaggoner.com)
+* Added CNAME support, props Martin Guppy
+* Added check for COOKIE_DOMAIN, props Scott, http://ocaoimh.ie/wordpress-mu-domain-mapping-05/comment-page-1/#comment-671821
+
 = 0.5 =
 * Works in VHOST or folder based installs now.
 * Remote login added.
