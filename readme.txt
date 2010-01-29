@@ -69,6 +69,27 @@ Things to remember:
 5. Make sure the default Apache virtual host points at your WordPress MU site so it will handle unknown domains correctly. (Need info on cpanel, etc. How do you get them to respond to any domain?)
 6. Do not define COOKIE_DOMAIN in your wp-config.php as it conflicts with logins on your mapped domains.
 
+
+= For Cpanel users =
+
+If your domain uses the nameservers on your hosting account you should follow these instructions. If the nameservers are elsewhere change the A record or CNAME as documented above.
+Add a wildcard subdomain/virtual host record to your site's DNS record in Web Host Manager (WHM).  If you do not have access to WHM, you must email your web host and ask them to make this one change for you.  Should be no problem:
+
+* Go to "Edit DNS Zone" and select the domain of your WPMU installation and click "Edit".
+* Below "Add New Entries Below This Line", enter in the first box (Domain) an asterisk: "*".
+* The second box, TTL, should be "14400".
+* The third box should be "IN".
+* Select A Record Type from the drop down "A".
+* And in the last box, paste in the IP address of your website.
+
+From Cpanel, click on the "Parked Domains" under the "Domains" section:
+
+* Under "Create a New Parked Domain" enter the domain name you want to add to your site.
+* Click the "Add Domain" button.
+* It should add the domain to the list of parked domains and under "Redirect to" it will say "not redirected".  That is OKAY.
+
+Now you're ready to do your domain mapping.
+
 == Action Hooks ==
 You can now hook into certain parts of the domain_mapping mu-plugin to enable you to extend the features that are built in without the need to modify this plugin. To do this, just create a script within the mu-plugins dir that is called AFTER this plugin (eg, call it domain_mapping_extended.php).
 	
