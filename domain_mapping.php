@@ -191,7 +191,7 @@ function dm_handle_actions() {
 	}
 
 }
-if ( $_GET[ 'page' ] == 'domainmapping' )
+if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'domainmapping' )
 	add_action( 'admin_init', 'dm_handle_actions' );
 
 function dm_manage_page() {
@@ -441,6 +441,8 @@ function remote_logout_loader() {
 
 function redirect_to_mapped_domain() {
 	global $current_blog, $wpdb;
+	if ( !isset( $_SERVER[ 'HTTPS' ] ) )
+		$_SERVER[ 'HTTPS' ] = "off";
 	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
 	$url = domain_mapping_siteurl( false );
 	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
