@@ -1,8 +1,8 @@
 === WordPress MU Domain Mapping ===
 Contributors: donncha, wpmuguru
 Tags: wordpressmu, domain-mapping
-Tested up to: 2.8.6
-Stable tag: 0.5
+Tested up to: 2.9.1
+Stable tag: 0.5.1
 Requires at least: 2.8.6
 Donate link: http://ocaoimh.ie/wordpress-plugins/gifts-and-donations/
 
