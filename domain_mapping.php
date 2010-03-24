@@ -331,7 +331,13 @@ function get_original_url( $url ) {
 	if ( ! isset( $orig_urls[ $wpdb->blogid ] ) ) {
 		if ( defined( 'DOMAIN_MAPPING' ) ) 
 			remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
-		$orig_urls[ $wpdb->blogid ] = get_option( $url );
+		$orig_url = get_option( $url );
+		if ( isset( $_SERVER['HTTPS' ] ) && 'on' == strtolower( $_SERVER['HTTPS' ] ) ) {
+			$orig_url = str_replace( "http://", "https://", $orig_url );
+		} else {
+			$orig_url = str_replace( "https://", "http://", $orig_url );
+		}
+		$orig_urls[ $wpdb->blogid ] = $orig_url;
 		if ( defined( 'DOMAIN_MAPPING' ) ) 
 			add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
 	}
