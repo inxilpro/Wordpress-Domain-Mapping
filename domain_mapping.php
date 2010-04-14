@@ -27,7 +27,7 @@ Author URI: http://ocaoimh.ie/
 
 function dm_add_pages() {
 	global $current_site, $wpdb;
-	if( constant( 'VHOST' ) == 'yes' || $current_site->blog_id != $wpdb->blogid ) {
+	if ( ( $current_site->blog_id != $wpdb->blogid ) && !dm_sunrise_warning( false ) && $current_site->path == "/" ) {
 		add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
 	}
 	if( is_site_admin() ) {
@@ -101,6 +101,8 @@ function dm_admin_page() {
 	if ( false == is_site_admin() ) { // paranoid? moi?
 		return false;
 	}
+
+	dm_sunrise_warning();
 
 	if ( $current_site->path != "/" ) {
 		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress MU is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
@@ -194,6 +196,32 @@ function dm_handle_actions() {
 if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'domainmapping' )
 	add_action( 'admin_init', 'dm_handle_actions' );
 
+function dm_sunrise_warning( $die = true ) {
+	if ( !file_exists( ABSPATH . '/wp-content/sunrise.php' ) ) {
+		if ( !$die )
+			return true;
+
+		if ( is_site_admin() ) {
+			wp_die( "Please copy sunrise.php to " . ABSPATH . "/wp-content/sunrise.php and uncomment the SUNRISE definition in " . ABSPATH . "wp-config.php" );
+		} else {
+			wp_die( "This plugin has not been configured correctly yet." );
+		}
+		return true;
+	} elseif ( !defined( 'SUNRISE' ) ) {
+		if ( !$die )
+			return true;
+
+		if ( is_site_admin() ) {
+			wp_die( "Please uncomment the line <em>//define( 'SUNRISE', 'on' );</em> in your " . ABSPATH . "wp-config.php" );
+		} else {
+			wp_die( "This plugin has not been configured correctly yet." );
+		}
+		return true;
+	}
+	return false;
+}
+
+
 function dm_manage_page() {
 	global $wpdb;
 	maybe_create_db();
@@ -201,26 +229,10 @@ function dm_manage_page() {
 	if ( isset( $_GET[ 'updated' ] ) ) {
 		do_action('dm_echo_updated_msg');
 	}
-	echo "<div class='wrap'><h2>Domain Mapping</h2>";
-	if ( !file_exists( ABSPATH . '/wp-content/sunrise.php' ) ) {
-		if ( is_site_admin() ) {
-			echo "Please copy sunrise.php to " . ABSPATH . "/wp-content/sunrise.php and uncomment the SUNRISE definition in " . ABSPATH . "wp-config.php";
-		} else {
-			echo "This plugin has not been configured correctly yet.";
-		}
-		echo "</div>";
-		return false;
-	}
 
-	if ( !defined( 'SUNRISE' ) ) {
-		if ( is_site_admin() ) {
-			echo "Please uncomment the line <em>//define( 'SUNRISE', 'on' );</em> in your " . ABSPATH . "wp-config.php";
-		} else {
-			echo "This plugin has not been configured correctly yet.";
-		}
-		echo "</div>";
-		return false;
-	}
+	dm_sunrise_warning();
+
+	echo "<div class='wrap'><h2>Domain Mapping</h2>";
 
 	if ( false == get_site_option( 'dm_ipaddress' ) && false == get_site_option( 'dm_cname' ) ) {
 		if ( is_site_admin() ) {
