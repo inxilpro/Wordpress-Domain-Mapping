@@ -115,7 +115,6 @@ function dm_admin_page() {
 			add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
 			add_site_option( 'dm_cname', $_POST[ 'cname' ] );
 			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
-			add_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
 		}
 	}
 
@@ -136,9 +135,6 @@ function dm_admin_page() {
 	echo "<input type='checkbox' name='permanent_redirect' value='1' ";
 	echo get_site_option( 'dm_301_redirect' ) == 1 ? "checked='checked'" : "";
 	echo " /> Permanent redirect. (better for your blogger's pagerank)<br />";
-	echo "<input type='checkbox' name='always_redirect_admin' value='1' ";
-	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
-	echo " /> Redirect administration pages to original blog's domain<br />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
@@ -375,22 +371,11 @@ function domain_mapping_post_content( $post_content ) {
 }
 
 function dm_redirect_admin() {
-	if ( get_site_option( 'dm_redirect_admin' ) ) {
-		// redirect mapped domain admin page to original url
-		$url = get_original_url( 'siteurl' );
-		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
-			wp_redirect( untrailingslashit( $url ) . $_SERVER[ 'REQUEST_URI' ] );
-			exit;
-		}
-	} else {
-		global $current_blog;
-		// redirect original url to primary domain
-		$url = domain_mapping_siteurl( false );
-		$request_uri = str_replace( $current_blog->path, '/', $_SERVER[ 'REQUEST_URI' ] );
-		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
-			wp_redirect( trailingslashit( $url ) . '?dm_gotoadmin=1&back=' . urlencode( $request_uri ) );
-			exit;
-		}
+	// redirect mapped domain admin page to original url if necessary
+	$url = get_original_url( 'siteurl' );
+	if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
+		wp_redirect( untrailingslashit( $url ) . $_SERVER[ 'REQUEST_URI' ] );
+		exit;
 	}
 }
 
@@ -433,18 +418,9 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 } else {
 	add_filter( 'admin_url', 'domain_mapping_adminurl' );
 }	
-if ( isset( $_GET[ 'dm_gotoadmin' ] ) )
-	add_action( 'init', 'redirect_to_admin', 9999 );
 add_action( 'admin_init', 'dm_redirect_admin' );
 if ( isset( $_GET[ 'dm' ] ) )
 	add_action( 'template_redirect', 'remote_login_js' );
-
-function redirect_to_admin() {
-	if ( isset( $_GET[ 'dm_gotoadmin' ] ) && is_user_logged_in() ) {
-		wp_redirect( site_url( $_GET[ 'back' ] ) );
-		exit;
-	}
-}
 
 function remote_logout_loader() {
 	global $current_site, $current_blog, $wpdb;
