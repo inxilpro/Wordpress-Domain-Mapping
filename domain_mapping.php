@@ -28,9 +28,13 @@ Author URI: http://ocaoimh.ie/
 function dm_add_pages() {
 	global $current_site, $wpdb;
 
+	if ( $current_site->path != "/" ) {
+		wp_die( __( "The domain mapping plugin only works if the site is installed in /. This is a limitation of how virtual servers work and is very difficult to work around.", 'wordpress-mu-domain-mapping' ) );
+	}
+
 	maybe_create_db();
 
-	if ( ( $current_site->blog_id != $wpdb->blogid ) && !dm_sunrise_warning( false ) && $current_site->path == "/" ) {
+	if ( ( $current_site->blog_id != $wpdb->blogid ) && !dm_sunrise_warning( false ) ) {
 		add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
 	}
 	if( is_site_admin() ) {
