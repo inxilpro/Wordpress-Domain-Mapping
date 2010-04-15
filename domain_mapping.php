@@ -27,11 +27,15 @@ Author URI: http://ocaoimh.ie/
 
 function dm_add_pages() {
 	global $current_site, $wpdb;
+
+	maybe_create_db();
+
 	if ( ( $current_site->blog_id != $wpdb->blogid ) && !dm_sunrise_warning( false ) && $current_site->path == "/" ) {
 		add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
 	}
 	if( is_site_admin() ) {
 		add_submenu_page('wpmu-admin.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
+		add_submenu_page('wpmu-admin.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
 	}
 }
 add_action( 'admin_menu', 'dm_add_pages' );
@@ -96,6 +100,118 @@ function maybe_create_db() {
 
 }
 
+function dm_domains_admin() {
+	global $wpdb, $current_site;
+	if ( false == is_site_admin() ) { // paranoid? moi?
+		return false;
+	}
+
+	dm_sunrise_warning();
+
+	if ( $current_site->path != "/" ) {
+		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress MU is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
+	}
+
+	switch( $_POST[ 'action' ] ) {
+		default:
+	}
+	echo '<h2>' . __( 'Domain Mapping: Domains' ) . '</h2>';
+	if ( !empty( $_POST[ 'action' ] ) ) {
+		check_admin_referer( 'domain_mapping' );
+		switch( $_POST[ 'action' ] ) {
+			case "edit":
+				$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtable} WHERE domain = %s", $_POST[ 'domain' ] ) );
+				if ( $row ) {
+					dm_edit_domain( $row );
+				} else {
+					echo "<h3>" . __( 'Domain not found', 'wordpress-mu-domain-mapping' ) . "</h3>";
+				}
+			break;
+			case "save":
+				if ( $_POST[ 'blog_id' ] != 0 AND 
+					$_POST[ 'blog_id' ] != 1 AND 
+					null == $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id != %d AND domain = %s", $_POST[ 'blog_id' ], $_POST[ 'domain' ] ) ) 
+				) {
+					if ( $_POST[ 'orig_domain' ] == '' ) {
+						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `blog_id`, `domain`, `active` ) VALUES ( %d, %s, %d )", $_POST[ 'blog_id' ], $_POST[ 'domain' ], $_POST[ 'active' ] ) );
+						echo "<p><strong>" . __( 'Domain Add', 'wordpress-mu-domain-mapping' ) . "</strong></p>";
+					} else {
+						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET blog_id = %d, domain = %s, active = %d WHERE domain = %s", $_POST[ 'blog_id' ], $_POST[ 'domain' ], $_POST[ 'active' ], $_POST[ 'orig_domain' ] ) );
+						echo "<p><strong>" . __( 'Domain Updated', 'wordpress-mu-domain-mapping' ) . "</strong></p>";
+					}
+				}
+			break;
+			case "del":
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE domain = %s", $_POST[ 'domain' ] ) );
+				echo "<p><strong>" . __( 'Domain Deleted', 'wordpress-mu-domain-mapping' ) . "</strong></p>";
+			break;
+			case "search":
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtable} WHERE domain LIKE %s", $_POST[ 'domain' ] ) );
+				dm_domain_listing( $rows, sprintf( __( "Searching for %s", 'wordpress-mu-domain-mapping' ), $_POST[ 'domain' ] ) );
+			break;
+		}
+		if ( $_POST[ 'action' ] == 'update' ) {
+			add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+			add_site_option( 'dm_cname', $_POST[ 'cname' ] );
+			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
+		}
+	}
+
+	echo "<h3>" . __( 'Search Domains', 'wordpress-mu-domain-mapping' ) . "</h3>";
+	echo '<form method="POST">';
+	wp_nonce_field( 'domain_mapping' );
+	echo '<input type="hidden" name="action" value="search" />';
+	echo _e( "Domain:", 'wordpress-mu-domain-mapping' );
+	echo " <input type='text' name='domain' value='' /><br />";
+	echo "<input type='submit' value='" . __( 'Search', 'wordpress-mu-domain-mapping' ) . "' />";
+	echo "</form><br />";
+	dm_edit_domain();
+	$rows = $wpdb->get_results( "SELECT * FROM {$wpdb->dmtable} ORDER BY id DESC LIMIT 0,20" );
+	dm_domain_listing( $rows );
+}
+
+function dm_edit_domain( $row = false ) {
+	if ( is_object( $row ) ) {
+		echo "<h3>" . __( 'Edit Domain', 'wordpress-mu-domain-mapping' ) . "</h3>";
+	}  else {
+		echo "<h3>" . __( 'New Domain', 'wordpress-mu-domain-mapping' ) . "</h3>";
+		$row->blog_id = '';
+		$row->domain = '';
+		$_POST[ 'domain' ] = '';
+		$row->active = 1;
+	}
+
+	echo "<form method='POST'><input type='hidden' name='action' value='save' /><input type='hidden' name='orig_domain' value='{$_POST[ 'domain' ]}' />";
+	wp_nonce_field( 'domain_mapping' );
+	echo "<table class='form-table'>\n";
+	echo "<tr><th>Blog ID</th><td><input type='text' name='blog_id' value='{$row->blog_id}' /></td></tr>\n";
+	echo "<tr><th>Domain</th><td><input type='text' name='domain' value='{$row->domain}' /></td></tr>\n";
+	echo "<tr><th>Primary</th><td><input type='checkbox' name='active' value='1' ";
+	echo $row->active == 1 ? 'checked=1 ' : ' ';
+	echo "/></td></tr>\n";
+	echo "</table>";
+	echo "<input type='submit' value='" .__( 'Save', 'wordpress-mu-domain-mapping' ). "' /></form><br /><br />";
+}
+
+function dm_domain_listing( $rows, $heading = '' ) {
+	if ( $rows ) {
+		if ( $heading != '' )
+			echo "<h3>$heading</h3>";
+		echo '<table class="widefat" cellspacing="0"><thead><tr><th>'.__( 'Blog ID', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Domain', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Primary', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Edit', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Delete', 'wordpress-mu-domain-mapping' ).'</th></tr></thead><tbody>';
+		foreach( $rows as $row ) {
+			echo "<tr><td><a href='wpmu-blogs.php?action=editblog&id={$row->blog_id}'>{$row->blog_id}</a></td><td><a href='http://{$row->domain}/'>{$row->domain}</a></td><td>";
+			echo $row->active == 1 ? __( 'Yes',  'wordpress-mu-domain-mapping' ) : __( 'No',  'wordpress-mu-domain-mapping' );
+			echo "</td><td><form method='POST'><input type='hidden' name='action' value='edit' /><input type='hidden' name='domain' value='{$row->domain}' />";
+			wp_nonce_field( 'domain_mapping' );
+			echo "<input type='submit' value='" .__( 'Edit', 'wordpress-mu-domain-mapping' ). "' /></form></td><td><form method='POST'><input type='hidden' name='action' value='del' /><input type='hidden' name='domain' value='{$row->domain}' />";
+			wp_nonce_field( 'domain_mapping' );
+			echo "<input type='submit' value='" .__( 'Del', 'wordpress-mu-domain-mapping' ). "' /></form>";
+			echo "</td></tr>";
+		}
+		echo '</table>';
+	}
+}
+
 function dm_admin_page() {
 	global $wpdb, $current_site;
 	if ( false == is_site_admin() ) { // paranoid? moi?
@@ -107,7 +223,6 @@ function dm_admin_page() {
 	if ( $current_site->path != "/" ) {
 		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress MU is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
 	}
-	maybe_create_db();
 
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		check_admin_referer( 'domain_mapping' );
@@ -220,7 +335,6 @@ function dm_sunrise_warning( $die = true ) {
 
 function dm_manage_page() {
 	global $wpdb;
-	maybe_create_db();
 
 	if ( isset( $_GET[ 'updated' ] ) ) {
 		do_action('dm_echo_updated_msg');
