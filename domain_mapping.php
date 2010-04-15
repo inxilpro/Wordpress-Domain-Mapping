@@ -34,7 +34,7 @@ function dm_add_pages() {
 
 	maybe_create_db();
 
-	if ( ( $current_site->blog_id != $wpdb->blogid ) && !dm_sunrise_warning( false ) ) {
+	if ( get_site_option( 'dm_user_settings' ) && $current_site->blog_id != $wpdb->blogid && !dm_sunrise_warning( false ) ) {
 		add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
 	}
 	if( is_site_admin() ) {
@@ -232,11 +232,23 @@ function dm_admin_page() {
 		check_admin_referer( 'domain_mapping' );
 		if ( $_POST[ 'action' ] == 'update' ) {
 			add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+			if ( intval( $_POST[ 'always_redirect_admin' ] ) == 0 )
+				$_POST[ 'dm_remote_login' ] = 0; // disable remote login if redirecting to mapped domain
+			add_site_option( 'dm_remote_login', intval( $_POST[ 'dm_remote_login' ] ) );
 			add_site_option( 'dm_cname', $_POST[ 'cname' ] );
 			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
+			add_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
+			add_site_option( 'dm_user_settings', intval( $_POST[ 'dm_user_settings' ] ) );
 		}
 	}
 
+	// set up some defaults
+	if ( get_site_option( 'dm_remote_login', 'NA' ) == 'NA' )
+		add_site_option( 'dm_remote_login', 1 );
+	if ( get_site_option( 'dm_redirect_admin', 'NA' ) == 'NA' )
+		add_site_option( 'dm_redirect_admin', 1 );
+	if ( get_site_option( 'dm_user_settings', 'NA' ) == 'NA' )
+		add_site_option( 'dm_user_settings', 1 );
 	echo '<h3>' . __( 'Domain Mapping Configuration' ) . '</h3>';
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="update" />';
@@ -251,9 +263,19 @@ function dm_admin_page() {
 	_e( "Server CNAME domain: " );
 	echo "<input type='text' name='cname' value='" . get_site_option( 'dm_cname' ) . "' /><br />";
 
-	echo "<input type='checkbox' name='permanent_redirect' value='1' ";
+	echo "<h3>" . __( 'Domain Options', 'wordpress-mu-domain-mapping' ) . "</h3>";
+	echo "<ol><li><input type='checkbox' name='dm_remote_login' value='1' ";
+	echo get_site_option( 'dm_remote_login' ) == 1 ? "checked='checked'" : "";
+	echo " /> Remote Login</li>";
+	echo "<li><input type='checkbox' name='permanent_redirect' value='1' ";
 	echo get_site_option( 'dm_301_redirect' ) == 1 ? "checked='checked'" : "";
-	echo " /> Permanent redirect. (better for your blogger's pagerank)<br />";
+	echo " /> Permanent redirect (better for your blogger's pagerank)</li>";
+	echo "<li><input type='checkbox' name='dm_user_settings' value='1' ";
+	echo get_site_option( 'dm_user_settings' ) == 1 ? "checked='checked'" : "";
+	echo " /> User domain mapping page</li> ";
+	echo "<li><input type='checkbox' name='always_redirect_admin' value='1' ";
+	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
+	echo " /> Redirect administration pages to original blog's domain (remote login disabled if redirect disabled)</li></ol>";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
@@ -489,16 +511,27 @@ function domain_mapping_post_content( $post_content ) {
 }
 
 function dm_redirect_admin() {
-	// redirect mapped domain admin page to original url if necessary
-	$url = get_original_url( 'siteurl' );
-	if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
-		wp_redirect( untrailingslashit( $url ) . $_SERVER[ 'REQUEST_URI' ] );
-		exit;
+	if ( get_site_option( 'dm_redirect_admin' ) ) {
+		// redirect mapped domain admin page to original url
+		$url = get_original_url( 'siteurl' );
+		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
+			wp_redirect( untrailingslashit( $url ) . $_SERVER[ 'REQUEST_URI' ] );
+			exit;
+		}
+	} else {
+		global $current_blog;
+		// redirect original url to primary domain wp-admin/ - remote login is disabled!
+		$url = domain_mapping_siteurl( false );
+		$request_uri = str_replace( $current_blog->path, '/', $_SERVER[ 'REQUEST_URI' ] );
+		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
+			wp_redirect( str_replace( '//wp-admin', '/wp-admin', trailingslashit( $url ) . $request_uri ) );
+			exit;
+		}
 	}
 }
 
 function redirect_login_to_orig() {
-	if ( $_GET[ 'action' ] == 'logout' || isset( $_GET[ 'loggedout' ] ) ) {
+	if ( !get_site_option( 'dm_remote_login' ) || $_GET[ 'action' ] == 'logout' || isset( $_GET[ 'loggedout' ] ) ) {
 		return false;
 	}
 	$url = get_original_url( 'siteurl' );
