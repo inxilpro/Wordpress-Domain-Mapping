@@ -579,8 +579,8 @@ function remote_logout_loader() {
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
 	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
 	$hash = get_dm_hash();
-	$wpdb->insert( $wpdb->dmtablelogins, array( 'user_id' => 0, 'blog_id' => $current_blog->blog_id, 't' => time() ) );
-	$key = $wpdb->insert_id;
+	$key = md5( time() );
+	$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtablelogins} ( `id`, `user_id`, `blog_id`, `t` ) VALUES( %s, 0, %d, NOW() )", $key, $current_blog->blog_id ) );
 	wp_redirect( $protocol . $current_site->domain . $current_site->path . "?dm={$hash}&action=logout&blogid={$current_blog->blog_id}&k={$key}&t=" . mt_rand() );
 	exit;
 }
