@@ -18,7 +18,7 @@ You may also define a CNAME on this page. It will most likely be the domain name
 Your users should go to Tools->Domain Mapping where they can add or delete domains. One domain must be set as the primary domain for the blog. When mapping a domain, (like 'example.com') your users must create an A record in their DNS pointing at that IP address. They should use multiple A records if your server uses more than one IP address.
 If your user is mapping a hostname of a domain (sometimes called a "subdomain") like www.example.com or blog.example.com it's sufficient to create a CNAME record pointing at their blog url (NOT IP address).
 
-The login page will almost always redirect back to the original blog's domain for login to ensure the user is logged in on the original site as well as the domain mapped one. For security reasons remote login is disabled if you allow users to use their Dashboard on the mapped domain.
+The login page will almost always redirect back to the blog's original domain for login to ensure the user is logged in on the original site as well as the domain mapped one. For security reasons remote login is disabled if you allow users to use their Dashboard on the mapped domain.
 
 Site admins can now choose to either allow users to setup DNS ANAME records by supplying an IP (or list of IP addresses) or set a CNAME but not both (entering a CNAME for the end user voids the use of IP's)
 
@@ -84,7 +84,7 @@ On Site Admin->Domain Mapping you can configure the following settings:
 1. "Remote Login" can be disabled. Useful if you're hosting totally separate websites.
 2. "Permanent redirect" uses a 301 redirect rather than 302 to send visitors to your domain mapped site.
 3. "User domain mapping page" allows you to disable Settings->Domain Mapping that the user uses.
-4. "Redirect administration pages to original blog's domain (remote login disabled if redirect disabled)" - with this checked, if a user visits their dashboard on a mapped domain it will redirect to the dashboard on the non mapped domain. If you don't want this, remote login will be disabled for security reasons.
+4. "Redirect administration pages to blog's original domain (remote login disabled if redirect disabled)" - with this checked, if a user visits their dashboard on a mapped domain it will redirect to the dashboard on the non mapped domain. If you don't want this, remote login will be disabled for security reasons.
 
 Site Admn->Domains allows you to edit the domains mapped to any blogs on your site.
 

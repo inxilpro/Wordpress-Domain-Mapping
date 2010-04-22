@@ -275,7 +275,7 @@ function dm_admin_page() {
 	echo " /> User domain mapping page</li> ";
 	echo "<li><input type='checkbox' name='always_redirect_admin' value='1' ";
 	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
-	echo " /> Redirect administration pages to original blog's domain (remote login disabled if redirect disabled)</li></ol>";
+	echo " /> Redirect administration pages to blog's original domain (remote login disabled if redirect disabled)</li></ol>";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
