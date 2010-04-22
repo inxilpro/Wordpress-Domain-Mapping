@@ -228,6 +228,14 @@ function dm_admin_page() {
 		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress MU is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
 	}
 
+	// set up some defaults
+	if ( get_site_option( 'dm_remote_login', 'NA' ) == 'NA' )
+		add_site_option( 'dm_remote_login', 1 );
+	if ( get_site_option( 'dm_redirect_admin', 'NA' ) == 'NA' )
+		add_site_option( 'dm_redirect_admin', 1 );
+	if ( get_site_option( 'dm_user_settings', 'NA' ) == 'NA' )
+		add_site_option( 'dm_user_settings', 1 );
+
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		check_admin_referer( 'domain_mapping' );
 		if ( $_POST[ 'action' ] == 'update' ) {
@@ -242,13 +250,6 @@ function dm_admin_page() {
 		}
 	}
 
-	// set up some defaults
-	if ( get_site_option( 'dm_remote_login', 'NA' ) == 'NA' )
-		add_site_option( 'dm_remote_login', 1 );
-	if ( get_site_option( 'dm_redirect_admin', 'NA' ) == 'NA' )
-		add_site_option( 'dm_redirect_admin', 1 );
-	if ( get_site_option( 'dm_user_settings', 'NA' ) == 'NA' )
-		add_site_option( 'dm_user_settings', 1 );
 	echo '<h3>' . __( 'Domain Mapping Configuration' ) . '</h3>';
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="update" />';
@@ -620,7 +621,7 @@ function remote_login_js() {
 			if ( !is_user_logged_in() )
 				exit;
 			$key = md5( time() . mt_rand() );
-			$wpdb->insert( $wpdb->dmtablelogins, array( 'id' => $key, 'user_id' => $current_user->ID, 'blog_id' => $_GET[ 'blogid' ], 't' => time() ) );
+			$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtablelogins} ( `id`, `user_id`, `blog_id`, `t` ) VALUES( %s, %d, %d, NOW() )", $key, $current_user->ID, $_GET[ 'blogid' ] ) );
 			$url = add_query_arg( array( 'action' => 'login', 'dm' => $hash, 'k' => $key, 't' => mt_rand() ), $_GET[ 'back' ] );
 			echo "window.location = '$url'";
 			exit;
