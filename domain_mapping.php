@@ -473,30 +473,44 @@ function domain_mapping_siteurl( $setting ) {
 }
 
 // url is siteurl or home
-function get_original_url( $url ) {
+function get_original_url( $url, $blog_id = 0 ) {
 	global $wpdb;
 
+	if ( $blog_id != 0 ) {
+		$id = $blog_id; 
+	} else {
+		$id = $wpdb->blogid;
+	}
+
 	static $orig_urls = array();
-	if ( ! isset( $orig_urls[ $wpdb->blogid ] ) ) {
+	if ( ! isset( $orig_urls[ $id ] ) ) {
 		if ( defined( 'DOMAIN_MAPPING' ) ) 
 			remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
-		$orig_url = get_option( $url );
+		if ( $blog_id == 0 ) {
+			$orig_url = get_option( $url );
+		} else {
+			$orig_url = get_blog_option( $blog_id, $url );
+		}
 		if ( isset( $_SERVER['HTTPS' ] ) && 'on' == strtolower( $_SERVER['HTTPS' ] ) ) {
 			$orig_url = str_replace( "http://", "https://", $orig_url );
 		} else {
 			$orig_url = str_replace( "https://", "http://", $orig_url );
 		}
-		$orig_urls[ $wpdb->blogid ] = $orig_url;
+		if ( $blog_id == 0 ) {
+			$orig_urls[ $wpdb->blogid ] = $orig_url;
+		} else {
+			$orig_urls[ $blog_id ] = $orig_url;
+		}
 		if ( defined( 'DOMAIN_MAPPING' ) ) 
 			add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
 	}
-	return $orig_urls[ $wpdb->blogid ];
+	return $orig_urls[ $id ];
 }
 
-function domain_mapping_adminurl( $url ) {
+function domain_mapping_adminurl( $url, $path, $blog_id = 0 ) {
 	$index = strpos( $url, '/wp-admin' );
 	if( $index !== false )
-		$url = get_original_url( 'siteurl' ) . substr( $url, $index );
+		$url = get_original_url( 'siteurl', $blog_id ) . substr( $url, $index );
 	return $url;
 }
 
@@ -568,7 +582,11 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_filter( 'template_directory_uri', 'domain_mapping_post_content' );
 	add_filter( 'plugins_url', 'domain_mapping_post_content' );
 } else {
-	add_filter( 'admin_url', 'domain_mapping_adminurl' );
+	if ( $wp_version == '2.9.2' ) {
+		add_filter( 'admin_url', 'domain_mapping_adminurl', 10, 2 );
+	} else {
+		add_filter( 'admin_url', 'domain_mapping_adminurl', 10, 3 );
+	}
 }	
 add_action( 'admin_init', 'dm_redirect_admin' );
 if ( isset( $_GET[ 'dm' ] ) )
