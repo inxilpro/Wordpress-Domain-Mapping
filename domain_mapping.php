@@ -25,9 +25,17 @@ Author URI: http://ocaoimh.ie/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-function dm_add_pages() {
-	global $current_site, $wpdb;
+function domain_mapping_warning() {
+	echo "<div id='domain-mapping-warning' class='updated fade'><p><strong>".__( 'Domain Mapping Disabled.', 'wordpress-mu-domain-mapping' )."</strong> ".sprintf(__('You must <a href="%1$s">create a network</a> for it to work.', 'wordpress-mu-domain-mapping' ), "http://codex.wordpress.org/Create_A_Network")."</p></div>";
+}
 
+function dm_add_pages() {
+	global $current_site, $wpdb, $wp_db_version;
+
+	if ( !isset( $current_site ) && $wp_db_version >= 15260 ) { // WP 3.0 network hasn't been configured
+		add_action('admin_notices', 'domain_mapping_warning');
+		return false;
+	}
 	if ( $current_site->path != "/" ) {
 		wp_die( __( "The domain mapping plugin only works if the site is installed in /. This is a limitation of how virtual servers work and is very difficult to work around.", 'wordpress-mu-domain-mapping' ) );
 	}
@@ -188,7 +196,7 @@ function dm_edit_domain( $row = false ) {
 	echo "<form method='POST'><input type='hidden' name='action' value='save' /><input type='hidden' name='orig_domain' value='{$_POST[ 'domain' ]}' />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<table class='form-table'>\n";
-	echo "<tr><th>Blog ID</th><td><input type='text' name='blog_id' value='{$row->blog_id}' /></td></tr>\n";
+	echo "<tr><th>Site ID</th><td><input type='text' name='blog_id' value='{$row->blog_id}' /></td></tr>\n";
 	echo "<tr><th>Domain</th><td><input type='text' name='domain' value='{$row->domain}' /></td></tr>\n";
 	echo "<tr><th>Primary</th><td><input type='checkbox' name='active' value='1' ";
 	echo $row->active == 1 ? 'checked=1 ' : ' ';
@@ -201,7 +209,7 @@ function dm_domain_listing( $rows, $heading = '' ) {
 	if ( $rows ) {
 		if ( $heading != '' )
 			echo "<h3>$heading</h3>";
-		echo '<table class="widefat" cellspacing="0"><thead><tr><th>'.__( 'Blog ID', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Domain', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Primary', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Edit', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Delete', 'wordpress-mu-domain-mapping' ).'</th></tr></thead><tbody>';
+		echo '<table class="widefat" cellspacing="0"><thead><tr><th>'.__( 'Site ID', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Domain', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Primary', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Edit', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Delete', 'wordpress-mu-domain-mapping' ).'</th></tr></thead><tbody>';
 		foreach( $rows as $row ) {
 			echo "<tr><td><a href='wpmu-blogs.php?action=editblog&id={$row->blog_id}'>{$row->blog_id}</a></td><td><a href='http://{$row->domain}/'>{$row->domain}</a></td><td>";
 			echo $row->active == 1 ? __( 'Yes',  'wordpress-mu-domain-mapping' ) : __( 'No',  'wordpress-mu-domain-mapping' );
@@ -350,7 +358,7 @@ function dm_sunrise_warning( $die = true ) {
 			return true;
 
 		if ( is_site_admin() ) {
-			wp_die( "Please uncomment the line <em>//define( 'SUNRISE', 'on' );</em> in your " . ABSPATH . "wp-config.php" );
+			wp_die( "Please uncomment the line <em>define( 'SUNRISE', 'on' );</em> or add it to your " . ABSPATH . "wp-config.php" );
 		} else {
 			wp_die( "This plugin has not been configured correctly yet." );
 		}
@@ -611,7 +619,7 @@ function redirect_to_mapped_domain() {
 	$url = domain_mapping_siteurl( false );
 	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
-		if ( constant( "VHOST" ) != 'yes' ) {
+		if ( ( defined( 'VHOST' ) && constant( "VHOST" ) != 'yes' ) || ( defined( 'SUBDOMAIN_INSTALL' ) && constant( 'SUBDOMAIN_INSTALL' ) == false ) ) {
 			$_SERVER[ 'REQUEST_URI' ] = str_replace( $current_blog->path, '/', $_SERVER[ 'REQUEST_URI' ] );
 		}
 		header( "Location: {$url}{$_SERVER[ 'REQUEST_URI' ]}", true, $redirect );
