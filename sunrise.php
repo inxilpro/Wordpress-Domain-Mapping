@@ -6,10 +6,15 @@ if ( defined( 'COOKIE_DOMAIN' ) ) {
 
 // let the site admin page catch the VHOST == 'no'
 $wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
+$dm_domain = $wpdb->escape( $_SERVER[ 'HTTP_HOST' ] );
+
+if( ( $nowww = preg_replace( '|^www\.|', '', $dm_domain ) ) != $dm_domain )
+	$where = $wpdb->prepare( 'domain IN (%s,%s)', $dm_domain, $nowww );
+else
+	$where = $wpdb->prepare( 'domain = %s', $dm_domain );
 
 $wpdb->suppress_errors();
-$dm_domain = $wpdb->escape( preg_replace( "/^www\./", "", $_SERVER[ 'HTTP_HOST' ] ) );
-$domain_mapping_id = $wpdb->get_var( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '{$dm_domain}' LIMIT 1" );
+$domain_mapping_id = $wpdb->get_var( "SELECT blog_id FROM {$wpdb->dmtable} WHERE {$where} ORDER BY CHAR_LENGTH(domain) DESC LIMIT 1" );
 $wpdb->suppress_errors( false );
 if( $domain_mapping_id ) {
 	$current_blog = $wpdb->get_row("SELECT * FROM {$wpdb->blogs} WHERE blog_id = '$domain_mapping_id' LIMIT 1");

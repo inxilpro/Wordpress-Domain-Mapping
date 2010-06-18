@@ -121,7 +121,7 @@ function dm_domains_admin() {
 	dm_sunrise_warning();
 
 	if ( $current_site->path != "/" ) {
-		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress MU is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
+		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
 	}
 
 	switch( $_POST[ 'action' ] ) {
@@ -233,7 +233,7 @@ function dm_admin_page() {
 	dm_sunrise_warning();
 
 	if ( $current_site->path != "/" ) {
-		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress MU is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
+		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
 	}
 
 	// set up some defaults
@@ -251,7 +251,7 @@ function dm_admin_page() {
 			if ( intval( $_POST[ 'always_redirect_admin' ] ) == 0 )
 				$_POST[ 'dm_remote_login' ] = 0; // disable remote login if redirecting to mapped domain
 			add_site_option( 'dm_remote_login', intval( $_POST[ 'dm_remote_login' ] ) );
-			add_site_option( 'dm_cname', $_POST[ 'cname' ] );
+			add_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
 			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
 			add_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
 			add_site_option( 'dm_user_settings', intval( $_POST[ 'dm_user_settings' ] ) );
@@ -261,7 +261,7 @@ function dm_admin_page() {
 	echo '<h3>' . __( 'Domain Mapping Configuration' ) . '</h3>';
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="update" />';
-	echo "<p>" . __( "As a site admin on this site you can set the IP address users need to point their DNS A records at <em>or</em> the domain to point CNAME record at. If you don't know what the IP address is, ping this blog to get it." ) . "</p>";
+	echo "<p>" . __( "As a super admin on this network you can set the IP address users need to point their DNS A records at <em>or</em> the domain to point CNAME record at. If you don't know what the IP address is, ping this blog to get it." ) . "</p>";
 	echo "<p>" . __( "If you use round robin DNS or another load balancing technique with more than one IP, enter each address, separating them by commas." ) . "</p>";
 	_e( "Server IP Address: " );
 	echo "<input type='text' name='ipaddress' value='" . get_site_option( 'dm_ipaddress' ) . "' /><br />";
@@ -284,7 +284,7 @@ function dm_admin_page() {
 	echo " /> User domain mapping page</li> ";
 	echo "<li><input type='checkbox' name='always_redirect_admin' value='1' ";
 	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
-	echo " /> Redirect administration pages to blog's original domain (remote login disabled if redirect disabled)</li></ol>";
+	echo " /> Redirect administration pages to site's original domain (remote login disabled if redirect disabled)</li></ol>";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
@@ -294,7 +294,7 @@ function dm_admin_page() {
 function dm_handle_actions() {
 	global $wpdb;
 	if ( !empty( $_POST[ 'action' ] ) ) {
-		$domain = $wpdb->escape( preg_replace( "/^www\./", "", $_POST[ 'domain' ] ) );
+		$domain = $wpdb->escape( $_POST[ 'domain' ] );
 		if ( $domain == '' ) {
 			wp_die( "You must enter a domain" );
 		}
@@ -327,7 +327,7 @@ function dm_handle_actions() {
 			break;
 		}
 	} elseif( $_GET[ 'action' ] == 'delete' ) {
-		$domain = $wpdb->escape( preg_replace( "/^www\./", "", $_GET[ 'domain' ] ) );
+		$domain = $wpdb->escape( $_GET[ 'domain' ] );
 		if ( $domain == '' ) {
 			wp_die( "You must enter a domain" );
 		}
@@ -348,7 +348,7 @@ function dm_sunrise_warning( $die = true ) {
 			return true;
 
 		if ( is_site_admin() ) {
-			wp_die( "Please copy sunrise.php to " . ABSPATH . "/wp-content/sunrise.php and uncomment the SUNRISE definition in " . ABSPATH . "wp-config.php" );
+			wp_die( "Please copy sunrise.php to " . ABSPATH . "/wp-content/sunrise.php and ensure the SUNRISE definition is in " . ABSPATH . "wp-config.php" );
 		} else {
 			wp_die( "This plugin has not been configured correctly yet." );
 		}
@@ -427,7 +427,7 @@ function dm_manage_page() {
 	echo "<h3>" . __( 'Add new domain' ) . "</h3>";
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="add" />';
-	echo "http://www.<input type='text' name='domain' value='' />/<br />";
+	echo "http://<input type='text' name='domain' value='' />/<br />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='checkbox' name='primary' value='1' /> Primary domain for this blog<br />";
 	echo "<input type='submit' value='Add' />";
