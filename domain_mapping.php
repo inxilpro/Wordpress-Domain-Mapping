@@ -106,7 +106,7 @@ function maybe_create_db() {
 			$created = 1;
 		}
 		if ( $created ) {
-			?> <div id="message" class="updated fade"><p><strong><?php _e('Domain mapping database table created.') ?></strong></p></div> <?php
+			?> <div id="message" class="updated fade"><p><strong><?php _e( 'Domain mapping database table created.', 'wordpress-mu-domain-mapping' ) ?></strong></p></div> <?php
 		}
 	}
 
@@ -196,9 +196,9 @@ function dm_edit_domain( $row = false ) {
 	echo "<form method='POST'><input type='hidden' name='action' value='save' /><input type='hidden' name='orig_domain' value='{$_POST[ 'domain' ]}' />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<table class='form-table'>\n";
-	echo "<tr><th>Site ID</th><td><input type='text' name='blog_id' value='{$row->blog_id}' /></td></tr>\n";
-	echo "<tr><th>Domain</th><td><input type='text' name='domain' value='{$row->domain}' /></td></tr>\n";
-	echo "<tr><th>Primary</th><td><input type='checkbox' name='active' value='1' ";
+	echo "<tr><th>" . __( 'Site ID', 'wordpress-mu-domain-mapping' ) . "</th><td><input type='text' name='blog_id' value='{$row->blog_id}' /></td></tr>\n";
+	echo "<tr><th>" . __( 'Domain', 'wordpress-mu-domain-mapping' ) . "</th><td><input type='text' name='domain' value='{$row->domain}' /></td></tr>\n";
+	echo "<tr><th>" . __( 'Primary', 'wordpress-mu-domain-mapping' ) . "</th><td><input type='checkbox' name='active' value='1' ";
 	echo $row->active == 1 ? 'checked=1 ' : ' ';
 	echo "/></td></tr>\n";
 	echo "</table>";
@@ -261,34 +261,34 @@ function dm_admin_page() {
 	echo '<h3>' . __( 'Domain Mapping Configuration' ) . '</h3>';
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="update" />';
-	echo "<p>" . __( "As a super admin on this network you can set the IP address users need to point their DNS A records at <em>or</em> the domain to point CNAME record at. If you don't know what the IP address is, ping this blog to get it." ) . "</p>";
-	echo "<p>" . __( "If you use round robin DNS or another load balancing technique with more than one IP, enter each address, separating them by commas." ) . "</p>";
-	_e( "Server IP Address: " );
+	echo "<p>" . __( "As a super admin on this network you can set the IP address users need to point their DNS A records at <em>or</em> the domain to point CNAME record at. If you don't know what the IP address is, ping this blog to get it.", 'wordpress-mu-domain-mapping' ) . "</p>";
+	echo "<p>" . __( "If you use round robin DNS or another load balancing technique with more than one IP, enter each address, separating them by commas.", 'wordpress-mu-domain-mapping' ) . "</p>";
+	_e( "Server IP Address: ", 'wordpress-mu-domain-mapping' );
 	echo "<input type='text' name='ipaddress' value='" . get_site_option( 'dm_ipaddress' ) . "' /><br />";
 
 	// Using a CNAME is a safer method than using IP adresses for some people (IMHO)
-	echo "<p>" . __( "If you prefer the use of a CNAME record, you can set the domain here. This domain must be configured with an A record or ANAME pointing at an IP address. Visitors may experience problems if it is a CNAME of another domain." ) . "</p>";
-	echo "<p>" . __( "NOTE, this voids the use of any IP address set above" ) . "</p>";
-	_e( "Server CNAME domain: " );
+	echo "<p>" . __( "If you prefer the use of a CNAME record, you can set the domain here. This domain must be configured with an A record or ANAME pointing at an IP address. Visitors may experience problems if it is a CNAME of another domain.", 'wordpress-mu-domain-mapping' ) . "</p>";
+	echo "<p>" . __( "NOTE, this voids the use of any IP address set above", 'wordpress-mu-domain-mapping' ) . "</p>";
+	_e( "Server CNAME domain: ", 'wordpress-mu-domain-mapping' );
 	echo "<input type='text' name='cname' value='" . get_site_option( 'dm_cname' ) . "' /><br />";
+	echo '<p>' . __( 'The information you enter here will be shown to your users so they can configure their DNS correctly. It is for informational purposes only', 'wordpress-mu-domain-mapping' ) . '</p>';
 
 	echo "<h3>" . __( 'Domain Options', 'wordpress-mu-domain-mapping' ) . "</h3>";
 	echo "<ol><li><input type='checkbox' name='dm_remote_login' value='1' ";
 	echo get_site_option( 'dm_remote_login' ) == 1 ? "checked='checked'" : "";
-	echo " /> Remote Login</li>";
+	echo " /> " . __( 'Remote Login', 'wordpress-mu-domain-mapping' ) . "</li>";
 	echo "<li><input type='checkbox' name='permanent_redirect' value='1' ";
 	echo get_site_option( 'dm_301_redirect' ) == 1 ? "checked='checked'" : "";
-	echo " /> Permanent redirect (better for your blogger's pagerank)</li>";
+	echo " /> " . __( "Permanent redirect (better for your blogger's pagerank)", 'wordpress-mu-domain-mapping' ) . "</li>";
 	echo "<li><input type='checkbox' name='dm_user_settings' value='1' ";
 	echo get_site_option( 'dm_user_settings' ) == 1 ? "checked='checked'" : "";
-	echo " /> User domain mapping page</li> ";
+	echo " /> " . __( 'User domain mapping page', 'wordpress-mu-domain-mapping' ) . "</li> ";
 	echo "<li><input type='checkbox' name='always_redirect_admin' value='1' ";
 	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
-	echo " /> Redirect administration pages to site's original domain (remote login disabled if redirect disabled)</li></ol>";
+	echo " /> " . __( "Redirect administration pages to site's original domain (remote login disabled if redirect disabled)", 'wordpress-mu-domain-mapping' ) . "</li></ol>";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
-	_e( 'The information you enter here will be shown to your users so they can configure their DNS correctly.' );
 }
 
 function dm_handle_actions() {
@@ -329,7 +329,7 @@ function dm_handle_actions() {
 	} elseif( $_GET[ 'action' ] == 'delete' ) {
 		$domain = $wpdb->escape( $_GET[ 'domain' ] );
 		if ( $domain == '' ) {
-			wp_die( "You must enter a domain" );
+			wp_die( __( "You must enter a domain", 'wordpress-mu-domain-mapping' ) );
 		}
 		check_admin_referer( "delete" . $_GET['domain'] );
 		do_action('dm_handle_actions_del', $domain);
@@ -348,9 +348,9 @@ function dm_sunrise_warning( $die = true ) {
 			return true;
 
 		if ( is_site_admin() ) {
-			wp_die( "Please copy sunrise.php to " . ABSPATH . "/wp-content/sunrise.php and ensure the SUNRISE definition is in " . ABSPATH . "wp-config.php" );
+			wp_die( sprintf( __( "Please copy sunrise.php to %s/wp-content/sunrise.php and ensure the SUNRISE definition is in %swp-config.php", 'wordpress-mu-domain-mapping' ), ABSPATH, ABSPATH ) );
 		} else {
-			wp_die( "This plugin has not been configured correctly yet." );
+			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
 		}
 		return true;
 	} elseif ( !defined( 'SUNRISE' ) ) {
@@ -358,9 +358,9 @@ function dm_sunrise_warning( $die = true ) {
 			return true;
 
 		if ( is_site_admin() ) {
-			wp_die( "Please uncomment the line <em>define( 'SUNRISE', 'on' );</em> or add it to your " . ABSPATH . "wp-config.php" );
+			wp_die( sprintf( __( "Please uncomment the line <em>define( 'SUNRISE', 'on' );</em> or add it to your %swp-config.php", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
 		} else {
-			wp_die( "This plugin has not been configured correctly yet." );
+			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
 		}
 		return true;
 	}
@@ -377,13 +377,13 @@ function dm_manage_page() {
 
 	dm_sunrise_warning();
 
-	echo "<div class='wrap'><h2>Domain Mapping</h2>";
+	echo "<div class='wrap'><h2>" . __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ) . "</h2>";
 
 	if ( false == get_site_option( 'dm_ipaddress' ) && false == get_site_option( 'dm_cname' ) ) {
 		if ( is_site_admin() ) {
-			echo "Please set the IP address or CNAME of your server in the <a href='wpmu-admin.php?page=dm_admin_page'>site admin page</a>.";
+			_e( "Please set the IP address or CNAME of your server in the <a href='wpmu-admin.php?page=dm_admin_page'>site admin page</a>.", 'wordpress-mu-domain-mapping' );
 		} else {
-			echo "This plugin has not been configured correctly yet.";
+			_e( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' );
 		}
 		echo "</div>";
 		return false;
@@ -394,9 +394,8 @@ function dm_manage_page() {
 	if ( is_array( $domains ) && !empty( $domains ) ) {
 		$orig_url = parse_url( get_original_url( 'siteurl' ) );
 		$domains[] = array( 'domain' => $orig_url[ 'host' ], 'path' => $orig_url[ 'path' ], 'active' => 0 );
-		?><h3><?php _e( 'Active domains on this blog' ); ?></h3>
-		<table><tr><th>Primary</th><th>Domain</th><th>Delete</th></tr>
-		<?php
+		echo "<h3>" . __( 'Active domains on this blog', 'wordpress-mu-domain-mapping' ) . "</h3>";
+		echo "<table><tr><th>" . __( 'Primary', 'wordpress-mu-domain-mapping' ) . "</th><th>" . __( 'Domain', 'wordpress-mu-domain-mapping' ) . "</th><th>" . __( 'Delete', 'wordpress-mu-domain-mapping' ) . "</th></tr>\n";
 		$primary_found = 0;
 		echo '<form method="POST">';
 		foreach( $domains as $details ) {
@@ -419,31 +418,31 @@ function dm_manage_page() {
 		}
 		?></table><?php
 		echo '<input type="hidden" name="action" value="primary" />';
-		echo "<input type='submit' value='Set Primary Domain' />";
+		echo "<input type='submit' value='" . __( 'Set Primary Domain', 'wordpress-mu-domain-mapping' ) . "' />";
 		wp_nonce_field( 'domain_mapping' );
 		echo "</form>";
-		echo "<p>" . __( "* The primary domain cannot be deleted." ) . "</p>";
+		echo "<p>" . __( "* The primary domain cannot be deleted.", 'wordpress-mu-domain-mapping' ) . "</p>";
 	}
 	echo "<h3>" . __( 'Add new domain' ) . "</h3>";
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="add" />';
 	echo "http://<input type='text' name='domain' value='' />/<br />";
 	wp_nonce_field( 'domain_mapping' );
-	echo "<input type='checkbox' name='primary' value='1' /> Primary domain for this blog<br />";
+	echo "<input type='checkbox' name='primary' value='1' /> " . __( 'Primary domain for this blog', 'wordpress-mu-domain-mapping' ) . "<br />";
 	echo "<input type='submit' value='Add' />";
 	echo "</form><br />";
 	
 	if ( get_site_option( 'dm_cname' ) ) {
 		$dm_cname = get_site_option( 'dm_cname');
-		echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "CNAME" record pointing to the following domain name for this server: ' ) . "<strong>" . $dm_cname . "</strong></p>";
-		echo "<p>" . __( 'Google have published <a href="http://www.google.com/support/blogger/bin/answer.py?hl=en&answer=58317" target="_blank">instructions</a> for creating CNAME records on various hosting platforms such as GoDaddy and others.' ) . "</p>";
+		echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add a DNS "CNAME" record pointing to the following domain name for this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_cname ) . "</p>";
+		echo "<p>" . __( 'Google have published <a href="http://www.google.com/support/blogger/bin/answer.py?hl=en&answer=58317" target="_blank">instructions</a> for creating CNAME records on various hosting platforms such as GoDaddy and others.', 'wordpress-mu-domain-mapping' ) . "</p>";
 	} else {
-		echo "<p>" . __( 'If your domain name includes a hostname like "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL. "www" does not count because it will be removed from the domain name.' ) . "</p>";
+		echo "<p>" . __( 'If your domain name includes a hostname like "www", "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL.', 'wordpress-mu-domain-mapping' ) . "</p>";
 		$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
 		if ( strpos( $dm_ipaddress, ',' ) ) {
-			echo "<p>" . __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
+			echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_ipaddress ) . "</p>";
 		} else {
-			echo "<p>" . __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: ' ) . "<strong>" . $dm_ipaddress . "</strong></p>";
+			echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_ipaddress ) . "</p>";
 		}
 	}
 	echo "</div>";
@@ -660,10 +659,10 @@ function remote_login_js() {
 					wp_redirect( remove_query_arg( array( 'dm', 'action', 'k', 't', $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) ) );
 					exit;
 				} else {
-					wp_die( "Incorrect or out of date login key" );
+					wp_die( __( "Incorrect or out of date login key", 'wordpress-mu-domain-mapping' ) );
 				}
 			} else {
-				wp_die( "Unknown login key" );
+				wp_die( __( "Unknown login key", 'wordpress-mu-domain-mapping' ) );
 			}
 		} elseif ( $_GET[ 'action' ] == 'logout' ) {
 			if ( $details = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtablelogins} WHERE id = %d AND blog_id = %d", $_GET[ 'k' ], $_GET[ 'blogid' ] ) ) ) {
@@ -673,7 +672,7 @@ function remote_login_js() {
 				wp_redirect( trailingslashit( $blog->siteurl ) . "wp-login.php?loggedout=true" );
 				exit;
 			} else {
-				wp_die( "Unknown logout key" );
+				wp_die( __( "Unknown logout key", 'wordpress-mu-domain-mapping' ) );
 			}
 		}
 	}
