@@ -1,9 +1,9 @@
 === WordPress MU Domain Mapping ===
 Contributors: donncha, wpmuguru
-Tags: wordpressmu, domain-mapping
-Tested up to: 2.9.2
-Stable tag: 0.5.1
-Requires at least: 2.8.6
+Tags: wordpressmu, domain-mapping, multisite
+Tested up to: 3.0
+Stable tag: 0.5.2
+Requires at least: 2.9.2
 Donate link: http://ocaoimh.ie/wordpress-plugins/gifts-and-donations/
 
 Map any blog/site on a WordPressMU or WordPress 3.0 network to an external domain.

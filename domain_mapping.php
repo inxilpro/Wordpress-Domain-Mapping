@@ -2,8 +2,8 @@
 /*
 Plugin Name: WordPress MU Domain Mapping
 Plugin URI: http://ocaoimh.ie/wordpress-mu-domain-mapping/
-Description: Map any blog on a WordPress MU website to another domain.
-Version: 0.5.1
+Description: Map any blog on a WordPress website to another domain.
+Version: 0.5.2
 Author: Donncha O Caoimh
 Author URI: http://ocaoimh.ie/
 */
