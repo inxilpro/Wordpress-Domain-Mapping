@@ -1,0 +1,310 @@
+# Translation of the WordPress plugin   by .
+# Copyright (C) 2010 
+# This file is distributed under the same license as the  package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version:  \n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/wordpress-mu-domain-mapping\n"
+"POT-Creation-Date: 2010-06-22 20:39+0000\n"
+"PO-Revision-Date: 2010-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: domain_mapping.php:29
+msgid "Domain Mapping Disabled."
+msgstr ""
+
+#: domain_mapping.php:29
+#, php-format
+msgid "You must <a href=\"%1$s\">create a network</a> for it to work."
+msgstr ""
+
+#: domain_mapping.php:40
+msgid ""
+"The domain mapping plugin only works if the site is installed in /. This is "
+"a limitation of how virtual servers work and is very difficult to work "
+"around."
+msgstr ""
+
+#: domain_mapping.php:62
+msgid "New domain added."
+msgstr ""
+
+#: domain_mapping.php:65
+msgid "New domain already exists."
+msgstr ""
+
+#: domain_mapping.php:68
+msgid "New primary domain."
+msgstr ""
+
+#: domain_mapping.php:71
+msgid "Domain deleted."
+msgstr ""
+
+#: domain_mapping.php:109
+msgid "Domain mapping database table created."
+msgstr ""
+
+#: domain_mapping.php:124 domain_mapping.php:236
+#, php-format
+msgid ""
+"<strong>Warning!</strong> This plugin will only work if WordPress is "
+"installed in the root directory of your webserver. It is currently installed "
+"in &#8217;%s&#8217;."
+msgstr ""
+
+#: domain_mapping.php:130
+msgid "Domain Mapping: Domains"
+msgstr ""
+
+#: domain_mapping.php:139
+msgid "Domain not found"
+msgstr ""
+
+#: domain_mapping.php:149
+msgid "Domain Add"
+msgstr ""
+
+#: domain_mapping.php:152
+msgid "Domain Updated"
+msgstr ""
+
+#: domain_mapping.php:158
+msgid "Domain Deleted"
+msgstr ""
+
+#: domain_mapping.php:162
+#, php-format
+msgid "Searching for %s"
+msgstr ""
+
+#: domain_mapping.php:172
+msgid "Search Domains"
+msgstr ""
+
+#: domain_mapping.php:176
+msgid "Domain:"
+msgstr ""
+
+#: domain_mapping.php:178
+msgid "Search"
+msgstr ""
+
+#: domain_mapping.php:187
+msgid "Edit Domain"
+msgstr ""
+
+#: domain_mapping.php:189
+msgid "New Domain"
+msgstr ""
+
+#: domain_mapping.php:199 domain_mapping.php:212
+msgid "Site ID"
+msgstr ""
+
+#: domain_mapping.php:200 domain_mapping.php:212 domain_mapping.php:398
+msgid "Domain"
+msgstr ""
+
+#: domain_mapping.php:201 domain_mapping.php:212 domain_mapping.php:398
+msgid "Primary"
+msgstr ""
+
+#: domain_mapping.php:205
+msgid "Save"
+msgstr ""
+
+#: domain_mapping.php:212 domain_mapping.php:218
+msgid "Edit"
+msgstr ""
+
+#: domain_mapping.php:212 domain_mapping.php:398
+msgid "Delete"
+msgstr ""
+
+#: domain_mapping.php:215
+msgid "Yes"
+msgstr ""
+
+#: domain_mapping.php:215
+msgid "No"
+msgstr ""
+
+#: domain_mapping.php:220
+msgid "Del"
+msgstr ""
+
+#: domain_mapping.php:261
+msgid "Domain Mapping Configuration"
+msgstr ""
+
+#: domain_mapping.php:264
+msgid ""
+"As a super admin on this network you can set the IP address users need to "
+"point their DNS A records at <em>or</em> the domain to point CNAME record "
+"at. If you don't know what the IP address is, ping this blog to get it."
+msgstr ""
+
+#: domain_mapping.php:265
+msgid ""
+"If you use round robin DNS or another load balancing technique with more "
+"than one IP, enter each address, separating them by commas."
+msgstr ""
+
+#: domain_mapping.php:266
+msgid "Server IP Address: "
+msgstr ""
+
+#: domain_mapping.php:270
+msgid ""
+"If you prefer the use of a CNAME record, you can set the domain here. This "
+"domain must be configured with an A record or ANAME pointing at an IP "
+"address. Visitors may experience problems if it is a CNAME of another domain."
+msgstr ""
+
+#: domain_mapping.php:271
+msgid "NOTE, this voids the use of any IP address set above"
+msgstr ""
+
+#: domain_mapping.php:272
+msgid "Server CNAME domain: "
+msgstr ""
+
+#: domain_mapping.php:274
+msgid ""
+"The information you enter here will be shown to your users so they can "
+"configure their DNS correctly. It is for informational purposes only"
+msgstr ""
+
+#: domain_mapping.php:276
+msgid "Domain Options"
+msgstr ""
+
+#: domain_mapping.php:279
+msgid "Remote Login"
+msgstr ""
+
+#: domain_mapping.php:282
+msgid "Permanent redirect (better for your blogger's pagerank)"
+msgstr ""
+
+#: domain_mapping.php:285
+msgid "User domain mapping page"
+msgstr ""
+
+#: domain_mapping.php:288
+msgid ""
+"Redirect administration pages to site's original domain (remote login "
+"disabled if redirect disabled)"
+msgstr ""
+
+#: domain_mapping.php:332
+msgid "You must enter a domain"
+msgstr ""
+
+#: domain_mapping.php:351
+#, php-format
+msgid ""
+"Please copy sunrise.php to %s/wp-content/sunrise.php and ensure the SUNRISE "
+"definition is in %swp-config.php"
+msgstr ""
+
+#: domain_mapping.php:353 domain_mapping.php:363 domain_mapping.php:386
+msgid "This plugin has not been configured correctly yet."
+msgstr ""
+
+#: domain_mapping.php:361
+#, php-format
+msgid ""
+"Please uncomment the line <em>define( 'SUNRISE', 'on' );</em> or add it to "
+"your %swp-config.php"
+msgstr ""
+
+#: domain_mapping.php:380
+msgid "Domain Mapping"
+msgstr ""
+
+#: domain_mapping.php:384
+msgid ""
+"Please set the IP address or CNAME of your server in the <a href='wpmu-admin."
+"php?page=dm_admin_page'>site admin page</a>."
+msgstr ""
+
+#: domain_mapping.php:397
+msgid "Active domains on this blog"
+msgstr ""
+
+#: domain_mapping.php:421
+msgid "Set Primary Domain"
+msgstr ""
+
+#: domain_mapping.php:424
+msgid "* The primary domain cannot be deleted."
+msgstr ""
+
+#: domain_mapping.php:426
+msgid "Add new domain"
+msgstr ""
+
+#: domain_mapping.php:431
+msgid "Primary domain for this blog"
+msgstr ""
+
+#: domain_mapping.php:437
+#, php-format
+msgid ""
+"If you want to redirect a domain you will need to add a DNS \"CNAME\" record "
+"pointing to the following domain name for this server: <strong>%s</strong>"
+msgstr ""
+
+#: domain_mapping.php:438
+msgid ""
+"Google have published <a href=\"http://www.google.com/support/blogger/bin/"
+"answer.py?hl=en&answer=58317\" target=\"_blank\">instructions</a> for "
+"creating CNAME records on various hosting platforms such as GoDaddy and "
+"others."
+msgstr ""
+
+#: domain_mapping.php:440
+msgid ""
+"If your domain name includes a hostname like \"www\", \"blog\" or some other "
+"prefix before the actual domain name you will need to add a CNAME for that "
+"hostname in your DNS pointing at this blog URL."
+msgstr ""
+
+#: domain_mapping.php:443
+#, php-format
+msgid ""
+"If you want to redirect a domain you will need to add DNS \"A\" records "
+"pointing at the IP addresses of this server: <strong>%s</strong>"
+msgstr ""
+
+#: domain_mapping.php:445
+#, php-format
+msgid ""
+"If you want to redirect a domain you will need to add a DNS \"A\" record "
+"pointing at the IP address of this server: <strong>%s</strong>"
+msgstr ""
+
+#: domain_mapping.php:662
+msgid "Incorrect or out of date login key"
+msgstr ""
+
+#: domain_mapping.php:665
+msgid "Unknown login key"
+msgstr ""
+
+#: domain_mapping.php:675
+msgid "Unknown logout key"
+msgstr ""
+
+#: domain_mapping.php:706
+msgid "Mapping"
+msgstr ""

@@ -25,6 +25,11 @@ Author URI: http://ocaoimh.ie/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+function dm_text_domain() {
+	load_plugin_textdomain( 'wordpress-mu-domain-mapping', basename( dirname( __FILE__ ) )  . 'languages', basename( dirname( __FILE__ ) ) . '/languages' );
+}
+add_action( 'init', 'dm_text_domain' );
+
 function domain_mapping_warning() {
 	echo "<div id='domain-mapping-warning' class='updated fade'><p><strong>".__( 'Domain Mapping Disabled.', 'wordpress-mu-domain-mapping' )."</strong> ".sprintf(__('You must <a href="%1$s">create a network</a> for it to work.', 'wordpress-mu-domain-mapping' ), "http://codex.wordpress.org/Create_A_Network")."</p></div>";
 }
