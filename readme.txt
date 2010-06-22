@@ -34,8 +34,12 @@ Things to remember:
 
 == Changelog ==
 
+= 0.5.2 =
+* Added www support
+* Now supports WordPress 3.0
+* Updated readme/instructions
+
 = 0.5.1 =
-* Add www support
 * Added Cpanel instructions, props Marty Martin (http://mearis.com)
 * Filter more urls, props Ryan Waggoner (http://ryanwaggoner.com)
 * Added CNAME support, props Martin Guppy
