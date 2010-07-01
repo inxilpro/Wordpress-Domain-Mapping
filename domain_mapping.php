@@ -357,7 +357,6 @@ function dm_sunrise_warning( $die = true ) {
 		} else {
 			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
 		}
-		return true;
 	} elseif ( !defined( 'SUNRISE' ) ) {
 		if ( !$die )
 			return true;
@@ -367,7 +366,15 @@ function dm_sunrise_warning( $die = true ) {
 		} else {
 			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
 		}
-		return true;
+	} elseif ( !defined( 'SUNRISE_LOADED' ) ) {
+		if ( !$die )
+			return true;
+
+		if ( is_site_admin() ) {
+			wp_die( sprintf( __( "Please edit your %swp-config.php and move the line <em>define( 'SUNRISE', 'on' );</em> above the last require_once() in that file.", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
+		} else {
+			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
+		}
 	}
 	return false;
 }
