@@ -611,8 +611,10 @@ function remote_logout_loader() {
 	$hash = get_dm_hash();
 	$key = md5( time() );
 	$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtablelogins} ( `id`, `user_id`, `blog_id`, `t` ) VALUES( %s, 0, %d, NOW() )", $key, $current_blog->blog_id ) );
-	wp_redirect( $protocol . $current_site->domain . $current_site->path . "?dm={$hash}&action=logout&blogid={$current_blog->blog_id}&k={$key}&t=" . mt_rand() );
-	exit;
+	if ( get_site_option( 'dm_redirect_admin' ) ) {
+		wp_redirect( $protocol . $current_site->domain . $current_site->path . "?dm={$hash}&action=logout&blogid={$current_blog->blog_id}&k={$key}&t=" . mt_rand() );
+		exit;
+	} 
 }
 
 function redirect_to_mapped_domain() {
