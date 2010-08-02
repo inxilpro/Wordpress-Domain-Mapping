@@ -164,12 +164,16 @@ function dm_domains_admin() {
 			break;
 			case "search":
 				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtable} WHERE domain LIKE %s", $_POST[ 'domain' ] ) );
-				dm_domain_listing( $rows, sprintf( __( "Searching for %s", 'wordpress-mu-domain-mapping' ), $_POST[ 'domain' ] ) );
+				dm_domain_listing( $rows, sprintf( __( "Searching for %s", 'wordpress-mu-domain-mapping' ), esc_html( $_POST[ 'domain' ] ) ) );
 			break;
 		}
 		if ( $_POST[ 'action' ] == 'update' ) {
-			add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
-			add_site_option( 'dm_cname', $_POST[ 'cname' ] );
+			if ( preg_match( '|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$|', $_POST[ 'ipaddress' ] ) )
+				add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+			if ( ! preg_match( '/(--|\.\.)/', $_POST[ 'cname' ] ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $_POST[ 'cname' ] ) )
+				add_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
+			else
+				add_site_option( 'dm_cname', '' );
 			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
 		}
 	}
@@ -198,7 +202,7 @@ function dm_edit_domain( $row = false ) {
 		$row->active = 1;
 	}
 
-	echo "<form method='POST'><input type='hidden' name='action' value='save' /><input type='hidden' name='orig_domain' value='{$_POST[ 'domain' ]}' />";
+	echo "<form method='POST'><input type='hidden' name='action' value='save' /><input type='hidden' name='orig_domain' value='" . esc_attr( $_POST[ 'domain' ] ) . "' />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<table class='form-table'>\n";
 	echo "<tr><th>" . __( 'Site ID', 'wordpress-mu-domain-mapping' ) . "</th><td><input type='text' name='blog_id' value='{$row->blog_id}' /></td></tr>\n";
@@ -252,11 +256,15 @@ function dm_admin_page() {
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		check_admin_referer( 'domain_mapping' );
 		if ( $_POST[ 'action' ] == 'update' ) {
-			add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+			if ( preg_match( '|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$|', $_POST[ 'ipaddress' ] ) )
+				add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
 			if ( intval( $_POST[ 'always_redirect_admin' ] ) == 0 )
 				$_POST[ 'dm_remote_login' ] = 0; // disable remote login if redirecting to mapped domain
 			add_site_option( 'dm_remote_login', intval( $_POST[ 'dm_remote_login' ] ) );
-			add_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
+			if ( ! preg_match( '/(--|\.\.)/', $_POST[ 'cname' ] ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $_POST[ 'cname' ] ) )
+				add_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
+			else
+				add_site_option( 'dm_cname', '' );
 			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
 			add_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
 			add_site_option( 'dm_user_settings', intval( $_POST[ 'dm_user_settings' ] ) );
