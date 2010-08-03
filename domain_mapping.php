@@ -216,11 +216,12 @@ function dm_edit_domain( $row = false ) {
 
 function dm_domain_listing( $rows, $heading = '' ) {
 	if ( $rows ) {
+		$edit_url = admin_url( 'wpmu-blogs.php' );
 		if ( $heading != '' )
 			echo "<h3>$heading</h3>";
 		echo '<table class="widefat" cellspacing="0"><thead><tr><th>'.__( 'Site ID', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Domain', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Primary', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Edit', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Delete', 'wordpress-mu-domain-mapping' ).'</th></tr></thead><tbody>';
 		foreach( $rows as $row ) {
-			echo "<tr><td><a href='wpmu-blogs.php?action=editblog&id={$row->blog_id}'>{$row->blog_id}</a></td><td><a href='http://{$row->domain}/'>{$row->domain}</a></td><td>";
+			echo "<tr><td><a href='" . add_query_arg( array( 'action' => 'editblog', 'id' => $row->blog_id ), $edit_url ) . "'>{$row->blog_id}</a></td><td><a href='http://{$row->domain}/'>{$row->domain}</a></td><td>";
 			echo $row->active == 1 ? __( 'Yes',  'wordpress-mu-domain-mapping' ) : __( 'No',  'wordpress-mu-domain-mapping' );
 			echo "</td><td><form method='POST'><input type='hidden' name='action' value='edit' /><input type='hidden' name='domain' value='{$row->domain}' />";
 			wp_nonce_field( 'domain_mapping' );
@@ -305,7 +306,7 @@ function dm_admin_page() {
 }
 
 function dm_handle_actions() {
-	global $wpdb;
+	global $wpdb, $parent_file;
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		$domain = $wpdb->escape( $_POST[ 'domain' ] );
 		if ( $domain == '' ) {
@@ -313,6 +314,7 @@ function dm_handle_actions() {
 		}
 		check_admin_referer( 'domain_mapping' );
 		do_action('dm_handle_actions_init', $domain);
+		$url = add_query_arg( array( 'page' => 'domainmapping' ), admin_url( $parent_file ) );
 		switch( $_POST[ 'action' ] ) {
 			case "add":
 				do_action('dm_handle_actions_add', $domain);
@@ -321,10 +323,10 @@ function dm_handle_actions() {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
 					}
 					$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `id` , `blog_id` , `domain` , `active` ) VALUES ( NULL, %d, %s, %d )", $wpdb->blogid, $domain, $_POST[ 'primary' ] ) );
-					wp_redirect( '?page=domainmapping&updated=add' );
+					wp_redirect( add_query_arg( array( 'updated' => 'add' ), $url ) );
 					exit;
 				} else {
-					wp_redirect( '?page=domainmapping&updated=exists' );
+					wp_redirect( add_query_arg( array( 'updated' => 'exists' ), $url ) );
 					exit;
 				}
 			break;
@@ -335,7 +337,7 @@ function dm_handle_actions() {
 				if( $domain != $orig_url[ 'host' ] ) {
 					$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 1 WHERE domain = %s", $domain ) );
 				}
-				wp_redirect( '?page=domainmapping&updated=primary' );
+				wp_redirect( add_query_arg( array( 'updated' => 'primary' ), $url ) );
 				exit;
 			break;
 		}
@@ -347,7 +349,7 @@ function dm_handle_actions() {
 		check_admin_referer( "delete" . $_GET['domain'] );
 		do_action('dm_handle_actions_del', $domain);
 		$wpdb->query( "DELETE FROM {$wpdb->dmtable} WHERE domain = '$domain'" );
-		wp_redirect( '?page=domainmapping&updated=del' );
+		wp_redirect( add_query_arg( array( 'updated' => 'del' ), $url ) );
 		exit;
 	}
 
@@ -389,7 +391,7 @@ function dm_sunrise_warning( $die = true ) {
 
 
 function dm_manage_page() {
-	global $wpdb;
+	global $wpdb, $parent_file;
 
 	if ( isset( $_GET[ 'updated' ] ) ) {
 		do_action('dm_echo_updated_msg');
@@ -418,6 +420,7 @@ function dm_manage_page() {
 		echo "<table><tr><th>" . __( 'Primary', 'wordpress-mu-domain-mapping' ) . "</th><th>" . __( 'Domain', 'wordpress-mu-domain-mapping' ) . "</th><th>" . __( 'Delete', 'wordpress-mu-domain-mapping' ) . "</th></tr>\n";
 		$primary_found = 0;
 		echo '<form method="POST">';
+		$del_url = add_query_arg( array( 'page' => 'domainmapping', 'action' => 'delete' ), admin_url( $parent_file ) );
 		foreach( $domains as $details ) {
 			if ( 0 == $primary_found && $details[ 'domain' ] == $orig_url[ 'host' ] ) {
 				$details[ 'active' ] = 1;
@@ -430,7 +433,7 @@ function dm_manage_page() {
 			$url = "{$protocol}{$details[ 'domain' ]}{$details[ 'path' ]}";
 			echo "</td><td><a href='$url'>$url</a></td><td style='text-align: center'>";
 			if ( $details[ 'domain' ] != $orig_url[ 'host' ] && $details[ 'active' ] != 1 ) {
-				echo "<a href='" . wp_nonce_url( "?page=domainmapping&action=delete&domain={$details[ 'domain' ]}", "delete" . $details[ 'domain' ] ) . "'>Del</a>";
+				echo "<a href='" . wp_nonce_url( add_query_arg( array( 'domain' => $details[ 'domain' ] ), $del_url ), "delete" . $details[ 'domain' ] ) . "'>Del</a>";
 			}
 			echo "</td></tr>";
 			if ( 0 == $primary_found )
