@@ -663,6 +663,10 @@ function get_dm_hash() {
 
 function remote_login_js() {
 	global $current_blog, $current_user, $wpdb;
+
+	if ( 0 == get_site_option( 'dm_remote_login' ) )
+		return false;
+
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
 	$hash = get_dm_hash();
 	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
@@ -705,8 +709,10 @@ function remote_login_js() {
 
 function remote_login_js_loader() {
 	global $current_site, $current_blog;
-	if ( is_user_logged_in() )
+
+	if ( 0 == get_site_option( 'dm_remote_login' ) || is_user_logged_in() )
 		return false;
+
 	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS' ] ) ) ? 'https://' : 'http://';
 	$hash = get_dm_hash();
 	echo "<script src='{$protocol}{$current_site->domain}{$current_site->path}?dm={$hash}&amp;action=load&amp;blogid={$current_blog->blog_id}&amp;siteid={$current_blog->site_id}&amp;t=" . mt_rand() . "&amp;back=" . urlencode( $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) . "' type='text/javascript'></script>";
