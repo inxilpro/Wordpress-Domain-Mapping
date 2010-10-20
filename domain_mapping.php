@@ -358,7 +358,7 @@ if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'domainmapping' )
 	add_action( 'admin_init', 'dm_handle_actions' );
 
 function dm_sunrise_warning( $die = true ) {
-	if ( !file_exists( ABSPATH . '/wp-content/sunrise.php' ) ) {
+	if ( !file_exists( WP_CONTENT_DIR . '/sunrise.php' ) ) {
 		if ( !$die )
 			return true;
 
