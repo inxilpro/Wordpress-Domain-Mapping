@@ -210,6 +210,9 @@ function dm_edit_domain( $row = false ) {
 	echo "<tr><th>" . __( 'Primary', 'wordpress-mu-domain-mapping' ) . "</th><td><input type='checkbox' name='active' value='1' ";
 	echo $row->active == 1 ? 'checked=1 ' : ' ';
 	echo "/></td></tr>\n";
+	if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
+		echo "<tr><td colspan='2'>" . __( '<strong>Warning!</strong> Primary domains are currently disabled.', 'wordpress-mu-domain-mapping' ) . "</td></tr>";
+	}
 	echo "</table>";
 	echo "<input type='submit' value='" .__( 'Save', 'wordpress-mu-domain-mapping' ). "' /></form><br /><br />";
 }
@@ -231,6 +234,9 @@ function dm_domain_listing( $rows, $heading = '' ) {
 			echo "</td></tr>";
 		}
 		echo '</table>';
+		if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
+			echo "<p>" . __( '<strong>Warning!</strong> Primary domains are currently disabled.', 'wordpress-mu-domain-mapping' ) . "</p>";
+		}
 	}
 }
 
@@ -269,6 +275,7 @@ function dm_admin_page() {
 			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
 			add_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
 			add_site_option( 'dm_user_settings', intval( $_POST[ 'dm_user_settings' ] ) );
+			add_site_option( 'dm_no_primary_domain', intval( $_POST[ 'dm_no_primary_domain' ] ) );
 		}
 	}
 
@@ -299,7 +306,10 @@ function dm_admin_page() {
 	echo " /> " . __( 'User domain mapping page', 'wordpress-mu-domain-mapping' ) . "</li> ";
 	echo "<li><input type='checkbox' name='always_redirect_admin' value='1' ";
 	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
-	echo " /> " . __( "Redirect administration pages to site's original domain (remote login disabled if redirect disabled)", 'wordpress-mu-domain-mapping' ) . "</li></ol>";
+	echo " /> " . __( "Redirect administration pages to site's original domain (remote login disabled if redirect disabled)", 'wordpress-mu-domain-mapping' ) . "</li>";
+	echo "<li><input type='checkbox' name='dm_no_primary_domain' value='1' ";
+	echo get_site_option( 'dm_no_primary_domain' ) == 1 ? "checked='checked'" : "";
+	echo " /> " . __( "Disable primary domain check. Sites will not redirect to one domain name. May cause duplicate content issues.", 'wordpress-mu-domain-mapping' ) . "</li></ol>";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='submit' value='Save' />";
 	echo "</form><br />";
@@ -445,6 +455,9 @@ function dm_manage_page() {
 		wp_nonce_field( 'domain_mapping' );
 		echo "</form>";
 		echo "<p>" . __( "* The primary domain cannot be deleted.", 'wordpress-mu-domain-mapping' ) . "</p>";
+		if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
+			echo __( '<strong>Warning!</strong> Primary domains are currently disabled.', 'wordpress-mu-domain-mapping' );
+		}
 	}
 	echo "<h3>" . __( 'Add new domain' ) . "</h3>";
 	echo '<form method="POST">';
@@ -480,11 +493,19 @@ function domain_mapping_siteurl( $setting ) {
 	if ( !isset( $return_url[ $wpdb->blogid ] ) ) {
 		$s = $wpdb->suppress_errors();
 
-		// get primary domain, if we don't have one then return original url.
-		$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
-		if ( null == $domain ) {
-			$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( "siteurl" ) );
-			return $return_url[ $wpdb->blogid ];
+		if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
+			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER[ 'HTTP_HOST' ] ) . "' LIMIT 1" );
+			if ( null == $domain ) {
+				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( "siteurl" ) );
+				return $return_url[ $wpdb->blogid ];
+			}
+		} else {
+			// get primary domain, if we don't have one then return original url.
+			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
+			if ( null == $domain ) {
+				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( "siteurl" ) );
+				return $return_url[ $wpdb->blogid ];
+			}
 		}
 
 		$wpdb->suppress_errors( $s );
