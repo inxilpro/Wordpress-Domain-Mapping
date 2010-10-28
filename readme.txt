@@ -17,7 +17,7 @@ You may also define a CNAME on this page. It will most likely be the domain name
 Your users should go to Tools->Domain Mapping where they can add or delete domains. One domain must be set as the primary domain for the blog. When mapping a domain, (like 'example.com') your users must create an A record in their DNS pointing at that IP address. They should use multiple A records if your server uses more than one IP address.
 If your user is mapping a hostname of a domain (sometimes called a "subdomain") like www.example.com or blog.example.com it's sufficient to create a CNAME record pointing at their blog url (NOT IP address).
 
-The login page will almost always redirect back to the blog's original domain for login to ensure the user is logged in on the original netowrk as well as the domain mapped one. For security reasons remote login is disabled if you allow users to use their Dashboard on the mapped domain.
+The login page will almost always redirect back to the blog's original domain for login to ensure the user is logged in on the original network as well as the domain mapped one. For security reasons remote login is disabled if you allow users to use their Dashboard on the mapped domain.
 
 Super admins can now choose to either allow users to setup DNS ANAME records by supplying an IP (or list of IP addresses) or set a CNAME but not both (entering a CNAME for the end user voids the use of IP's)
 
@@ -27,11 +27,14 @@ Things to remember:
 
 * CNAME records that point to other CNAME records should be avoided (RFC 1034 section 5.2.2) so only tell your end users to use your chosen domain name as their CNAME DNS entry if your domain name is an ANAME to an IP address (or addresses)
 * Only use the CNAME method if your main domain is an ANAME of an IP address. This is very important. How do you know? Check your dns or ask your hosting company.
-* Giving your user the option to just use your chosen domain name and not an IP (or list of IP's) to set as their CNAME will make administration of your WordPressMU blog platform or WordPress 3.o0 network easier, an example of this would be purchasing/deploying a new server or indeed adding more servers to use in a round robin scenario. Your end users have no need to worry about IP address changes.
+* Giving your users the option to just use your chosen domain name and not an IP (or list of IP's) to set as their CNAME will make administration of your WordPressMU blog platform or WordPress 3.0 network easier, an example of this would be purchasing/deploying a new server or indeed adding more servers to use in a round robin scenario. Your end users have no need to worry about IP address changes.
 * Finally, telling your end users to use an ANAME IP or CNAME domain name is up to you and how your systems are deployed.
 * Further Reading: http://www.faqs.org/rfcs/rfc2219.html
 
 == Changelog ==
+
+= 0.5.3 =
+Check input on admin page.
 
 = 0.5.2 =
 * Added www support
@@ -73,12 +76,11 @@ Things to remember:
 * Redirect admin pages to the domain mapped url. Avoids problems with writing posts and image urls showing at the wrong url. Updated documentation on IP addresses for site admins.
 
 == Installation ==
-1. Copy sunrise.php into wp-content/. If there is a sunrise.php there already, you'll just have to merge them as best you can.
+1. Move sunrise.php into wp-content/. If there is a sunrise.php there already, you'll just have to merge them as best you can.
 2. In WordPress 3.0, if the wp-content/mu-plugins folder doesn't exist, create it.
-3. Copy domain_mapping.php into wp-content/mu-plugins/.
-4. Edit wp-config.php and uncomment the SUNRISE definition line:
+3. Move domain_mapping.php into wp-content/mu-plugins/.
+4. Edit wp-config.php and uncomment or add the SUNRISE definition line. If it does not exist please ensure it's on the line above the last "require_once" command.
     `define( 'SUNRISE', 'on' );`
-If this line does not exist, paste it in.
 5. As a "super admin", visit Super Admin->Domain Mapping to create the domain mapping database table and set the server IP address or a domain to point CNAME records at.
 6. Make sure the default Apache virtual host points at your WordPress MU site or WordPress 3.0 network so it will handle unknown domains correctly. On some hosts you may be required to get a dedicated IP address. A quick check: in a web broswer, type in the IP address of your install. If you are using CPanel, use the Park a Domain menu to set the mapped domain to your main installtion.
 7. Do not define COOKIE_DOMAIN in your wp-config.php as it conflicts with logins on your mapped domains.
@@ -90,7 +92,8 @@ On Super Admin->Domain Mapping you can configure the following settings:
 1. "Remote Login" can be disabled. Useful if you're hosting totally separate websites.
 2. "Permanent redirect" uses a 301 redirect rather than 302 to send visitors to your domain mapped site.
 3. "User domain mapping page" allows you to disable Settings->Domain Mapping that the user uses.
-4. "Redirect administration pages to network's original domain (remote login disabled if redirect disabled)" - with this checked, if a user visits their dashboard on a mapped domain it will redirect to the dashboard on the non mapped domain. If you don't want this, remote login will be disabled for security reasons.
+4. "Redirect administration pages to network's original domain (remote login disabled if this redirect is disabled)" - with this checked, if a user visits their dashboard on a mapped domain it will redirect to the dashboard on the non mapped domain. If you don't want this, remote login will be disabled for security reasons.
+5. "Disable primary domain check. Sites will not redirect to one domain name. May cause duplicate content issues." - ignore the primary domain setting on your sites. The same content will be available on multiple domains and may cause problems with Google because of duplicate content issues.
 
 Super Admin->Domains allows you to edit the domains mapped to any sites on your network.
 
