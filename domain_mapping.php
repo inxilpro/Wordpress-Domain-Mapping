@@ -306,7 +306,7 @@ function dm_admin_page() {
 	echo " /> " . __( 'User domain mapping page', 'wordpress-mu-domain-mapping' ) . "</li> ";
 	echo "<li><input type='checkbox' name='always_redirect_admin' value='1' ";
 	echo get_site_option( 'dm_redirect_admin' ) == 1 ? "checked='checked'" : "";
-	echo " /> " . __( "Redirect administration pages to site's original domain (remote login disabled if redirect disabled)", 'wordpress-mu-domain-mapping' ) . "</li>";
+	echo " /> " . __( "Redirect administration pages to site's original domain (remote login disabled if this redirect is disabled)", 'wordpress-mu-domain-mapping' ) . "</li>";
 	echo "<li><input type='checkbox' name='dm_no_primary_domain' value='1' ";
 	echo get_site_option( 'dm_no_primary_domain' ) == 1 ? "checked='checked'" : "";
 	echo " /> " . __( "Disable primary domain check. Sites will not redirect to one domain name. May cause duplicate content issues.", 'wordpress-mu-domain-mapping' ) . "</li></ol>";
