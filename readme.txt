@@ -1,8 +1,8 @@
 === WordPress MU Domain Mapping ===
 Contributors: donncha, wpmuguru, automattic
 Tags: wordpressmu, domain-mapping, multisite
-Tested up to: 3.0
-Stable tag: 0.5.2
+Tested up to: 3.0.1
+Stable tag: 0.5.3
 Requires at least: 2.9.2
 
 Map any blog/site on a WordPressMU or WordPress 3.0 network to an external domain.
