@@ -1,3 +1,57 @@
+2010-10-28 13:07  donncha
+
+	* readme.txt: Updated docs, changeog
+
+2010-10-28 13:03  donncha
+
+	* domain_mapping.php: Minor change to text on site admin options
+	  page
+
+2010-10-27 22:41  donncha
+
+	* domain_mapping.php: Allow "primary domain" option to be disabled
+
+2010-10-20 09:13  donncha
+
+	* domain_mapping.php: Use WP_CONTENT_DIR when looking for
+	  sunrise.php, props Ryan Bilesky
+
+2010-08-25 10:48  donncha
+
+	* domain_mapping.php: Check if remote login is enabled before
+	  sending remote login js or doing remote login duties
+
+2010-08-03 01:28  wpmuguru
+
+	* domain_mapping.php: more security improvements
+
+2010-08-02 00:08  wpmuguru
+
+	* domain_mapping.php: security improvements, more to come
+
+2010-07-01 15:22  donncha
+
+	* readme.txt: Removed donate link and added automattic as a
+	  contributor
+
+2010-07-01 10:03  donncha
+
+	* domain_mapping.php, sunrise.php: Added "SUNRISE_LOADED" constant
+	  to detect if SUNRISE constant declared correctly
+
+2010-07-01 09:53  donncha
+
+	* domain_mapping.php: Only redirect the logout url if admin pages
+	  are redirected. Props Thomas M Steenholdt
+
+2010-06-22 22:54  wpmuguru
+
+	* readme.txt: update readme & changelog
+
+2010-06-22 20:49  donncha
+
+	* Changelog.txt: Added changelog
+
 2010-06-22 20:48  donncha
 
 	* domain_mapping.php, readme.txt: Bump version to 0.5.2

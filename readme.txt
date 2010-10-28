@@ -31,10 +31,17 @@ Things to remember:
 * Finally, telling your end users to use an ANAME IP or CNAME domain name is up to you and how your systems are deployed.
 * Further Reading: http://www.faqs.org/rfcs/rfc2219.html
 
+== Upgrade Notice ==
+
+= 0.5.3 =
+Primary domain can be ignored and lots of bugfixes
+
 == Changelog ==
 
 = 0.5.3 =
-Check input on admin page.
+* Check input on admin page.
+* Allow the primary domain to be ignored.
+* Lots more bug fixes.
 
 = 0.5.2 =
 * Added www support
