@@ -391,7 +391,7 @@ function dm_sunrise_warning( $die = true ) {
 			return true;
 
 		if ( is_site_admin() ) {
-			wp_die( sprintf( __( "Please edit your %swp-config.php and move the line <em>define( 'SUNRISE', 'on' );</em> above the last require_once() in that file.", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
+			wp_die( sprintf( __( "Please edit your %swp-config.php and move the line <em>define( 'SUNRISE', 'on' );</em> above the last require_once() in that file or make sure you updated sunrise.php.", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
 		} else {
 			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
 		}

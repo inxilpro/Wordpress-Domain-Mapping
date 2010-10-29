@@ -10,6 +10,8 @@ Map any blog/site on a WordPressMU or WordPress 3.0 network to an external domai
 == Description ==
 This plugin allows users of a WordPress MU site or WordPress 3.0 network to map their blog/site to another domain.
 
+It requires manual installation as one file must be copied to wp-content/ and another file to wp-content/mu-plugins/. When upgrading the plugin, remember to update domain_mapping.php and sunrise.php. Full instructions are on the Installation page and are quite easy to follow.
+
 Super administrators must configure the plugin in Super Admin->Domain Mapping. You must enter the IP or IP addresses (comma deliminated) of your server on this page. The addresses are purely for documentation purposes so the user knows what they are (so users can set up their DNS correctly). They do nothing special in the plugin, they're only printed for the user to see.
 
 You may also define a CNAME on this page. It will most likely be the domain name of your network. See below for some restrictions and warnings.
@@ -34,7 +36,7 @@ Things to remember:
 == Upgrade Notice ==
 
 = 0.5.3 =
-Primary domain can be ignored and lots of bugfixes
+Primary domain can be ignored and lots of bugfixes.
 
 == Changelog ==
 
