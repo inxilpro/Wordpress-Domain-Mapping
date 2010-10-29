@@ -10,7 +10,7 @@ Map any blog/site on a WordPressMU or WordPress 3.0 network to an external domai
 == Description ==
 This plugin allows users of a WordPress MU site or WordPress 3.0 network to map their blog/site to another domain.
 
-It requires manual installation as one file must be copied to wp-content/ and another file to wp-content/mu-plugins/. When upgrading the plugin, remember to update domain_mapping.php and sunrise.php. Full instructions are on the Installation page and are quite easy to follow.
+It requires manual installation as one file must be copied to wp-content/ and another file to wp-content/mu-plugins/. When upgrading the plugin, remember to update domain_mapping.php and sunrise.php. Full instructions are on the Installation page and are quite easy to follow. You should also read [this page](http://ottopress.com/2010/wordpress-3-0-multisite-domain-mapping-tutorial/) too.
 
 Super administrators must configure the plugin in Super Admin->Domain Mapping. You must enter the IP or IP addresses (comma deliminated) of your server on this page. The addresses are purely for documentation purposes so the user knows what they are (so users can set up their DNS correctly). They do nothing special in the plugin, they're only printed for the user to see.
 
@@ -93,6 +93,8 @@ Primary domain can be ignored and lots of bugfixes.
 5. As a "super admin", visit Super Admin->Domain Mapping to create the domain mapping database table and set the server IP address or a domain to point CNAME records at.
 6. Make sure the default Apache virtual host points at your WordPress MU site or WordPress 3.0 network so it will handle unknown domains correctly. On some hosts you may be required to get a dedicated IP address. A quick check: in a web broswer, type in the IP address of your install. If you are using CPanel, use the Park a Domain menu to set the mapped domain to your main installtion.
 7. Do not define COOKIE_DOMAIN in your wp-config.php as it conflicts with logins on your mapped domains.
+
+Illustrated installation instructions can be found [here](http://ottopress.com/2010/wordpress-3-0-multisite-domain-mapping-tutorial/). Thanks Otto.
 
 = Configuration =
 
