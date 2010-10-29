@@ -1,3 +1,28 @@
+2010-10-29 11:57  donncha
+
+	* wordpress-mu-domain-mapping.pot: Updated translation file
+
+2010-10-29 11:54  donncha
+
+	* readme.txt: Link to Otto's installation docs
+
+2010-10-29 09:31  donncha
+
+	* domain_mapping.php, readme.txt: Minor edits to make installation
+	  and upgrading easier
+
+2010-10-28 13:36  donncha
+
+	* domain_mapping.php: Bump version to 0.5.3
+
+2010-10-28 13:35  donncha
+
+	* readme.txt: Bumped version to 0.5.3
+
+2010-10-28 13:33  donncha
+
+	* Changelog.txt, readme.txt: Updated changelog
+
 2010-10-28 13:07  donncha
 
 	* readme.txt: Updated docs, changeog
