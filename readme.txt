@@ -10,7 +10,7 @@ Map any blog/site on a WordPressMU or WordPress 3.0 network to an external domai
 == Description ==
 This plugin allows users of a WordPress MU site or WordPress 3.0 network to map their blog/site to another domain.
 
-It requires manual installation as one file must be copied to wp-content/ and another file to wp-content/mu-plugins/. When upgrading the plugin, remember to update domain_mapping.php and sunrise.php. Full instructions are on the Installation page and are quite easy to follow. You should also read [this page](http://ottopress.com/2010/wordpress-3-0-multisite-domain-mapping-tutorial/) too.
+It requires manual installation as one file must be copied to wp-content/. When upgrading the plugin, remember to update domain_mapping.php and sunrise.php. Full instructions are on the Installation page and are quite easy to follow. You should also read [this page](http://ottopress.com/2010/wordpress-3-0-multisite-domain-mapping-tutorial/) too.
 
 Super administrators must configure the plugin in Super Admin->Domain Mapping. You must enter the IP or IP addresses (comma deliminated) of your server on this page. The addresses are purely for documentation purposes so the user knows what they are (so users can set up their DNS correctly). They do nothing special in the plugin, they're only printed for the user to see.
 
@@ -85,16 +85,15 @@ Primary domain can be ignored and lots of bugfixes.
 * Redirect admin pages to the domain mapped url. Avoids problems with writing posts and image urls showing at the wrong url. Updated documentation on IP addresses for site admins.
 
 == Installation ==
-1. Move sunrise.php into wp-content/. If there is a sunrise.php there already, you'll just have to merge them as best you can.
-2. In WordPress 3.0, if the wp-content/mu-plugins folder doesn't exist, create it.
-3. Move domain_mapping.php into wp-content/mu-plugins/.
-4. Edit wp-config.php and uncomment or add the SUNRISE definition line. If it does not exist please ensure it's on the line above the last "require_once" command.
+1. Install the plugin in the usual way into the regular WordPress plugins folder. Network activate the plugin.
+2. Move sunrise.php into wp-content/. If there is a sunrise.php there already, you'll just have to merge them as best you can.
+3. Edit wp-config.php and uncomment or add the SUNRISE definition line. If it does not exist please ensure it's on the line above the last "require_once" command.
     `define( 'SUNRISE', 'on' );`
-5. As a "super admin", visit Super Admin->Domain Mapping to create the domain mapping database table and set the server IP address or a domain to point CNAME records at.
-6. Make sure the default Apache virtual host points at your WordPress MU site or WordPress 3.0 network so it will handle unknown domains correctly. On some hosts you may be required to get a dedicated IP address. A quick check: in a web broswer, type in the IP address of your install. If you are using CPanel, use the Park a Domain menu to set the mapped domain to your main installtion.
-7. Do not define COOKIE_DOMAIN in your wp-config.php as it conflicts with logins on your mapped domains.
+4. As a "super admin", visit Super Admin->Domain Mapping to create the domain mapping database table and set the server IP address or a domain to point CNAME records at.
+5. Make sure the default Apache virtual host points at your WordPress MU site or WordPress 3.0 network so it will handle unknown domains correctly. On some hosts you may be required to get a dedicated IP address. A quick check: in a web broswer, type in the IP address of your install. If you are using CPanel, use the Park a Domain menu to set the mapped domain to your main installtion.
+6. Do not define COOKIE_DOMAIN in your wp-config.php as it conflicts with logins on your mapped domains.
 
-Illustrated installation instructions can be found [here](http://ottopress.com/2010/wordpress-3-0-multisite-domain-mapping-tutorial/). Thanks Otto.
+Illustrated installation instructions can be found [here](http://ottopress.com/2010/wordpress-3-0-multisite-domain-mapping-tutorial/) but you can ignore the instructions to place domain_mapping.php in mu-plugins. Thanks Otto.
 
 = Configuration =
 
