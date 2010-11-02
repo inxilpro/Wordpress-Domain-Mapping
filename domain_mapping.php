@@ -560,8 +560,14 @@ function get_original_url( $url, $blog_id = 0 ) {
 
 function domain_mapping_adminurl( $url, $path, $blog_id = 0 ) {
 	$index = strpos( $url, '/wp-admin' );
-	if( $index !== false )
+	if( $index !== false ) {
 		$url = get_original_url( 'siteurl', $blog_id ) . substr( $url, $index );
+
+		// make sure admin_url is ssl if current page is ssl, or admin ssl is forced
+		if( ( is_ssl() || force_ssl_admin() ) && 0 === strpos( $url, 'http://' ) ) {
+			$url = 'https://' . substr( $url, 7 );
+		}
+	}
 	return $url;
 }
 
