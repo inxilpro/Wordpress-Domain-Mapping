@@ -182,9 +182,10 @@ function dm_domains_admin() {
 	echo '<form method="POST">';
 	wp_nonce_field( 'domain_mapping' );
 	echo '<input type="hidden" name="action" value="search" />';
+	echo '<p>';
 	echo _e( "Domain:", 'wordpress-mu-domain-mapping' );
-	echo " <input type='text' name='domain' value='' /><br />";
-	echo "<input type='submit' value='" . __( 'Search', 'wordpress-mu-domain-mapping' ) . "' />";
+	echo " <input type='text' name='domain' value='' /></p>";
+	echo "<p><input type='submit' class='button-secondary' value='" . __( 'Search', 'wordpress-mu-domain-mapping' ) . "' /></p>";
 	echo "</form><br />";
 	dm_edit_domain();
 	$rows = $wpdb->get_results( "SELECT * FROM {$wpdb->dmtable} ORDER BY id DESC LIMIT 0,20" );
@@ -214,7 +215,7 @@ function dm_edit_domain( $row = false ) {
 		echo "<tr><td colspan='2'>" . __( '<strong>Warning!</strong> Primary domains are currently disabled.', 'wordpress-mu-domain-mapping' ) . "</td></tr>";
 	}
 	echo "</table>";
-	echo "<input type='submit' value='" .__( 'Save', 'wordpress-mu-domain-mapping' ). "' /></form><br /><br />";
+	echo "<p><input type='submit' class='button-primary' value='" .__( 'Save', 'wordpress-mu-domain-mapping' ). "' /></p></form><br /><br />";
 }
 
 function dm_domain_listing( $rows, $heading = '' ) {
@@ -228,9 +229,9 @@ function dm_domain_listing( $rows, $heading = '' ) {
 			echo $row->active == 1 ? __( 'Yes',  'wordpress-mu-domain-mapping' ) : __( 'No',  'wordpress-mu-domain-mapping' );
 			echo "</td><td><form method='POST'><input type='hidden' name='action' value='edit' /><input type='hidden' name='domain' value='{$row->domain}' />";
 			wp_nonce_field( 'domain_mapping' );
-			echo "<input type='submit' value='" .__( 'Edit', 'wordpress-mu-domain-mapping' ). "' /></form></td><td><form method='POST'><input type='hidden' name='action' value='del' /><input type='hidden' name='domain' value='{$row->domain}' />";
+			echo "<input type='submit' class='button-secondary' value='" .__( 'Edit', 'wordpress-mu-domain-mapping' ). "' /></form></td><td><form method='POST'><input type='hidden' name='action' value='del' /><input type='hidden' name='domain' value='{$row->domain}' />";
 			wp_nonce_field( 'domain_mapping' );
-			echo "<input type='submit' value='" .__( 'Del', 'wordpress-mu-domain-mapping' ). "' /></form>";
+			echo "<input type='submit' class='button-secondary' value='" .__( 'Del', 'wordpress-mu-domain-mapping' ). "' /></form>";
 			echo "</td></tr>";
 		}
 		echo '</table>';
@@ -311,7 +312,7 @@ function dm_admin_page() {
 	echo get_site_option( 'dm_no_primary_domain' ) == 1 ? "checked='checked'" : "";
 	echo " /> " . __( "Disable primary domain check. Sites will not redirect to one domain name. May cause duplicate content issues.", 'wordpress-mu-domain-mapping' ) . "</li></ol>";
 	wp_nonce_field( 'domain_mapping' );
-	echo "<input type='submit' value='Save' />";
+	echo "<p><input class='button-primary' type='submit' value='Save' /></p>";
 	echo "</form><br />";
 }
 
@@ -453,7 +454,7 @@ function dm_manage_page() {
 		}
 		?></table><?php
 		echo '<input type="hidden" name="action" value="primary" />';
-		echo "<input type='submit' value='" . __( 'Set Primary Domain', 'wordpress-mu-domain-mapping' ) . "' />";
+		echo "<p><input type='submit' class='button-primary' value='" . __( 'Set Primary Domain', 'wordpress-mu-domain-mapping' ) . "' /></p>";
 		wp_nonce_field( 'domain_mapping' );
 		echo "</form>";
 		echo "<p>" . __( "* The primary domain cannot be deleted.", 'wordpress-mu-domain-mapping' ) . "</p>";
@@ -464,10 +465,10 @@ function dm_manage_page() {
 	echo "<h3>" . __( 'Add new domain' ) . "</h3>";
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="add" />';
-	echo "http://<input type='text' name='domain' value='' />/<br />";
+	echo "<p>http://<input type='text' name='domain' value='' />/<br />";
 	wp_nonce_field( 'domain_mapping' );
-	echo "<input type='checkbox' name='primary' value='1' /> " . __( 'Primary domain for this blog', 'wordpress-mu-domain-mapping' ) . "<br />";
-	echo "<input type='submit' value='Add' />";
+	echo "<input type='checkbox' name='primary' value='1' /> " . __( 'Primary domain for this blog', 'wordpress-mu-domain-mapping' ) . "</p>";
+	echo "<p><input type='submit' class='button-secondary' value='Add' /></p>";
 	echo "</form><br />";
 	
 	if ( get_site_option( 'dm_cname' ) ) {
