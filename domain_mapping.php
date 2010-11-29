@@ -196,6 +196,7 @@ function dm_domains_admin() {
 	dm_edit_domain();
 	$rows = $wpdb->get_results( "SELECT * FROM {$wpdb->dmtable} ORDER BY id DESC LIMIT 0,20" );
 	dm_domain_listing( $rows );
+	echo '<p>' . sprintf( __( '<strong>Note:</strong> %s', 'wordpress-mu-domain-mapping' ), dm_idn_warning() ) . "</p>";
 }
 
 function dm_edit_domain( $row = false ) {
@@ -298,7 +299,7 @@ function dm_admin_page() {
 	echo "<p>" . __( "If you prefer the use of a CNAME record, you can set the domain here. This domain must be configured with an A record or ANAME pointing at an IP address. Visitors may experience problems if it is a CNAME of another domain.", 'wordpress-mu-domain-mapping' ) . "</p>";
 	echo "<p>" . __( "NOTE, this voids the use of any IP address set above", 'wordpress-mu-domain-mapping' ) . "</p>";
 	_e( "Server CNAME domain: ", 'wordpress-mu-domain-mapping' );
-	echo "<input type='text' name='cname' value='" . get_site_option( 'dm_cname' ) . "' /><br />";
+	echo "<input type='text' name='cname' value='" . get_site_option( 'dm_cname' ) . "' /> (" . dm_idn_warning() . ")<br />";
 	echo '<p>' . __( 'The information you enter here will be shown to your users so they can configure their DNS correctly. It is for informational purposes only', 'wordpress-mu-domain-mapping' ) . '</p>';
 
 	echo "<h3>" . __( 'Domain Options', 'wordpress-mu-domain-mapping' ) . "</h3>";
@@ -490,6 +491,7 @@ function dm_manage_page() {
 			echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_ipaddress ) . "</p>";
 		}
 	}
+	echo '<p>' . sprintf( __( '<strong>Note:</strong> %s', 'wordpress-mu-domain-mapping' ), dm_idn_warning() ) . "</p>";
 	echo "</div>";
 }
 
@@ -815,6 +817,10 @@ function dm_site_admin() {
 	} else {
 		return true;
 	}
+}
+
+function dm_idn_warning() {
+	return sprintf( __( 'International Domain Names should be in <a href="%s">punycode</a> format.', 'wordpress-mu-domain-mapping' ), "http://api.webnic.cc/idnconversion.html" );
 }
 
 ?>
