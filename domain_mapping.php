@@ -57,6 +57,12 @@ function dm_add_pages() {
 }
 add_action( 'admin_menu', 'dm_add_pages' );
 
+function dm_network_pages() {
+	add_submenu_page('settings.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
+	add_submenu_page('settings.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
+}
+add_action( 'network_admin_menu', 'dm_network_pages' );
+
 // Default Messages for the users Domain Mapping management page
 // This can now be replaced by using:
 // remove_action('dm_echo_updated_msg','dm_echo_default_updated_msg');
