@@ -35,7 +35,7 @@ function domain_mapping_warning() {
 }
 
 function dm_add_pages() {
-	global $current_site, $wpdb, $wp_db_version;
+	global $current_site, $wpdb, $wp_db_version, $wp_version;
 
 	if ( !isset( $current_site ) && $wp_db_version >= 15260 ) { // WP 3.0 network hasn't been configured
 		add_action('admin_notices', 'domain_mapping_warning');
@@ -50,9 +50,15 @@ function dm_add_pages() {
 	if ( get_site_option( 'dm_user_settings' ) && $current_site->blog_id != $wpdb->blogid && !dm_sunrise_warning( false ) ) {
 		add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
 	}
-	if( dm_site_admin() ) {
-		add_submenu_page('wpmu-admin.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
-		add_submenu_page('wpmu-admin.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
+
+	if ( dm_site_admin() ) { 
+		if ( version_compare( $wp_version, '3.0.1', '<=' ) ) {
+			add_submenu_page('wpmu-admin.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
+			add_submenu_page('wpmu-admin.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
+		} else {
+			add_submenu_page('ms-admin.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
+			add_submenu_page('ms-admin.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
+		}
 	}
 }
 add_action( 'admin_menu', 'dm_add_pages' );
@@ -227,7 +233,13 @@ function dm_edit_domain( $row = false ) {
 
 function dm_domain_listing( $rows, $heading = '' ) {
 	if ( $rows ) {
-		$edit_url = admin_url( 'wpmu-blogs.php' );
+		if ( file_exists( ABSPATH . '/wp-admin/network/site-info.php' ) ) {
+			$edit_url = admin_url( 'network/site-info.php' );
+		} elseif ( file_exists( ABSPATH . 'ms-sites.php' ) ) {
+			$edit_url = admin_url( 'ms-sites.php' );
+		} else {
+			$edit_url = admin_url( 'wpmu-blogs.php' );
+		}
 		if ( $heading != '' )
 			echo "<h3>$heading</h3>";
 		echo '<table class="widefat" cellspacing="0"><thead><tr><th>'.__( 'Site ID', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Domain', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Primary', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Edit', 'wordpress-mu-domain-mapping' ).'</th><th>'.__( 'Delete', 'wordpress-mu-domain-mapping' ).'</th></tr></thead><tbody>';
