@@ -233,9 +233,9 @@ function dm_edit_domain( $row = false ) {
 
 function dm_domain_listing( $rows, $heading = '' ) {
 	if ( $rows ) {
-		if ( file_exists( ABSPATH . '/wp-admin/network/site-info.php' ) ) {
-			$edit_url = admin_url( 'network/site-info.php' );
-		} elseif ( file_exists( ABSPATH . 'ms-sites.php' ) ) {
+		if ( file_exists( ABSPATH . 'wp-admin/network/site-info.php' ) ) {
+			$edit_url = network_admin_url( 'site-info.php' );
+		} elseif ( file_exists( ABSPATH . 'wp-admin/ms-sites.php' ) ) {
 			$edit_url = admin_url( 'ms-sites.php' );
 		} else {
 			$edit_url = admin_url( 'wpmu-blogs.php' );
@@ -283,7 +283,15 @@ function dm_admin_page() {
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		check_admin_referer( 'domain_mapping' );
 		if ( $_POST[ 'action' ] == 'update' ) {
-			if ( preg_match( '|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$|', $_POST[ 'ipaddress' ] ) )
+			$ipok = true;
+			$ipaddresses = explode( ',', $_POST[ 'ipaddress' ] );
+			foreach( $ipaddresses as $address ) {
+				if ( ( $ip = trim( $address ) ) && !preg_match( '|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$|', $ip ) ) {
+					$ipok = false;
+					break;
+				}
+			}
+			if( $ipok )
 				add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
 			if ( intval( $_POST[ 'always_redirect_admin' ] ) == 0 )
 				$_POST[ 'dm_remote_login' ] = 0; // disable remote login if redirecting to mapped domain
