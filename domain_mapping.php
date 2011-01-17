@@ -450,7 +450,7 @@ function dm_manage_page() {
 	}
 
 	if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] == 'Off';
+		$_SERVER[ 'HTTPS' ] = 'Off';
 	$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
 	$domains = $wpdb->get_results( "SELECT * FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'", ARRAY_A );
 	if ( is_array( $domains ) && !empty( $domains ) ) {
