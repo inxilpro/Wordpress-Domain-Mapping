@@ -828,6 +828,7 @@ function ra_domain_mapping_field( $column, $blog_id ) {
 	}
 }
 add_action( 'manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3 );
+add_action( 'manage_sites_custom_column', 'ra_domain_mapping_field', 1, 3 );
 
 function dm_site_admin() {
 	if ( function_exists( 'is_super_admin' ) ) {
