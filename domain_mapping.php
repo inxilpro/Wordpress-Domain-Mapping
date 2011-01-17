@@ -51,7 +51,7 @@ function dm_add_pages() {
 		add_management_page(__( 'Domain Mapping', 'wordpress-mu-domain-mapping'), __( 'Domain Mapping', 'wordpress-mu-domain-mapping'), 'manage_options', 'domainmapping', 'dm_manage_page' );
 	}
 
-	if ( dm_site_admin() ) { 
+	if ( dm_site_admin() && version_compare( $wp_version, '3.0.9', '<=' ) ) {
 		if ( version_compare( $wp_version, '3.0.1', '<=' ) ) {
 			add_submenu_page('wpmu-admin.php', __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ), __( 'Domain Mapping', 'wordpress-mu-domain-mapping'), 'manage_options', 'dm_admin_page', 'dm_admin_page');
 			add_submenu_page('wpmu-admin.php', __( 'Domains', 'wordpress-mu-domain-mapping' ), __( 'Domains', 'wordpress-mu-domain-mapping'), 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
