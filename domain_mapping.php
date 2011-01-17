@@ -26,7 +26,7 @@ Author URI: http://ocaoimh.ie/
 */
 
 function dm_text_domain() {
-	load_plugin_textdomain( 'wordpress-mu-domain-mapping', basename( dirname( __FILE__ ) )  . 'languages', basename( dirname( __FILE__ ) ) . '/languages' );
+	load_plugin_textdomain( 'wordpress-mu-domain-mapping', basename( dirname( __FILE__ ) )  . 'languages', 'wordpress-mu-domain-mapping/languages' );
 }
 add_action( 'init', 'dm_text_domain' );
 
@@ -48,16 +48,16 @@ function dm_add_pages() {
 	maybe_create_db();
 
 	if ( get_site_option( 'dm_user_settings' ) && $current_site->blog_id != $wpdb->blogid && !dm_sunrise_warning( false ) ) {
-		add_management_page( 'Domain Mapping', 'Domain Mapping', 'manage_options', 'domainmapping', 'dm_manage_page' );
+		add_management_page(__( 'Domain Mapping', 'wordpress-mu-domain-mapping'), __( 'Domain Mapping', 'wordpress-mu-domain-mapping'), 'manage_options', 'domainmapping', 'dm_manage_page' );
 	}
 
 	if ( dm_site_admin() ) { 
 		if ( version_compare( $wp_version, '3.0.1', '<=' ) ) {
-			add_submenu_page('wpmu-admin.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
-			add_submenu_page('wpmu-admin.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
+			add_submenu_page('wpmu-admin.php', __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ), __( 'Domain Mapping', 'wordpress-mu-domain-mapping'), 'manage_options', 'dm_admin_page', 'dm_admin_page');
+			add_submenu_page('wpmu-admin.php', __( 'Domains', 'wordpress-mu-domain-mapping' ), __( 'Domains', 'wordpress-mu-domain-mapping'), 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
 		} else {
-			add_submenu_page('ms-admin.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
-			add_submenu_page('ms-admin.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
+			add_submenu_page('ms-admin.php', __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ), 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
+			add_submenu_page('ms-admin.php', __( 'Domains', 'wordpress-mu-domain-mapping' ), 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
 		}
 	}
 }
@@ -144,7 +144,7 @@ function dm_domains_admin() {
 	switch( $_POST[ 'action' ] ) {
 		default:
 	}
-	echo '<h2>' . __( 'Domain Mapping: Domains' ) . '</h2>';
+	echo '<h2>' . __( 'Domain Mapping: Domains', 'wordpress-mu-domain-mapping' ) . '</h2>';
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		check_admin_referer( 'domain_mapping' );
 		switch( $_POST[ 'action' ] ) {
@@ -307,7 +307,7 @@ function dm_admin_page() {
 		}
 	}
 
-	echo '<h3>' . __( 'Domain Mapping Configuration' ) . '</h3>';
+	echo '<h3>' . __( 'Domain Mapping Configuration', 'wordpress-mu-domain-mapping' ) . '</h3>';
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="update" />';
 	echo "<p>" . __( "As a super admin on this network you can set the IP address users need to point their DNS A records at <em>or</em> the domain to point CNAME record at. If you don't know what the IP address is, ping this blog to get it.", 'wordpress-mu-domain-mapping' ) . "</p>";
@@ -339,7 +339,7 @@ function dm_admin_page() {
 	echo get_site_option( 'dm_no_primary_domain' ) == 1 ? "checked='checked'" : "";
 	echo " /> " . __( "Disable primary domain check. Sites will not redirect to one domain name. May cause duplicate content issues.", 'wordpress-mu-domain-mapping' ) . "</li></ol>";
 	wp_nonce_field( 'domain_mapping' );
-	echo "<p><input class='button-primary' type='submit' value='Save' /></p>";
+	echo "<p><input class='button-primary' type='submit' value='" . __( "Save", 'wordpress-mu-domain-mapping' ) . "' /></p>";
 	echo "</form><br />";
 }
 
@@ -489,13 +489,13 @@ function dm_manage_page() {
 			echo __( '<strong>Warning!</strong> Primary domains are currently disabled.', 'wordpress-mu-domain-mapping' );
 		}
 	}
-	echo "<h3>" . __( 'Add new domain' ) . "</h3>";
+	echo "<h3>" . __( 'Add new domain', 'wordpress-mu-domain-mapping' ) . "</h3>";
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="add" />';
 	echo "<p>http://<input type='text' name='domain' value='' />/<br />";
 	wp_nonce_field( 'domain_mapping' );
 	echo "<input type='checkbox' name='primary' value='1' /> " . __( 'Primary domain for this blog', 'wordpress-mu-domain-mapping' ) . "</p>";
-	echo "<p><input type='submit' class='button-secondary' value='Add' /></p>";
+	echo "<p><input type='submit' class='button-secondary' value='" . __( "Add", 'wordpress-mu-domain-mapping' ) . "' /></p>";
 	echo "</form><br />";
 	
 	if ( get_site_option( 'dm_cname' ) ) {

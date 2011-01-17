@@ -32,6 +32,7 @@ Things to remember:
 * Giving your users the option to just use your chosen domain name and not an IP (or list of IP's) to set as their CNAME will make administration of your WordPressMU blog platform or WordPress 3.0 network easier, an example of this would be purchasing/deploying a new server or indeed adding more servers to use in a round robin scenario. Your end users have no need to worry about IP address changes.
 * Finally, telling your end users to use an ANAME IP or CNAME domain name is up to you and how your systems are deployed.
 * Further Reading: http://www.faqs.org/rfcs/rfc2219.html
+* For localization: place translation files (ie. wordpress-mu-domain-mapping-xx_XX.mo) in the directory wp-content/plugins/wordpress-mu-domain-mapping/languages. You will probably have to create that directory yourself.
 
 == Upgrade Notice ==
 
