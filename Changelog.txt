@@ -1,3 +1,82 @@
+2011-02-23 17:32  donncha
+
+	* domain_mapping.php, readme.txt: Bump to version 0.5.4
+
+2011-01-17 17:51  wpmuguru
+
+	* domain_mapping.php: add sites column hook for 3.1
+
+2011-01-17 15:41  wpmuguru
+
+	* domain_mapping.php: menu cleanup for 3.1
+
+2011-01-17 15:00  donncha
+
+	* domain_mapping.php, readme.txt: localization fixes, props Peter
+	  Holme, http://holme.se
+
+2011-01-17 12:28  donncha
+
+	* domain_mapping.php: Minor typo, props wpmuguru
+
+2011-01-15 23:52  wpmuguru
+
+	* domain_mapping.php: fix invalid markup
+
+2011-01-15 21:06  wpmuguru
+
+	* domain_mapping.php: allow comma separated IP list, minor function
+	  & path cleanup
+
+2010-12-21 18:13  donncha
+
+	* domain_mapping.php: Fixes for menus in 3.0 and 3.1, see
+	  http://wordpress.org/support/topic/plugin-wordpress-mu-domain-mapping-broken-link?replies=1#post-1838482
+
+2010-11-29 17:26  donncha
+
+	* domain_mapping.php: Fixed delete domain redirect, see
+	  http://wordpress.org/support/topic/plugin-wordpress-mu-domain-mapping-cosmetic-issue-bounces-to-main-tools-page?replies=1
+
+2010-11-29 17:01  donncha
+
+	* domain_mapping.php: Added IDN warning, See
+	  http://wordpress.org/support/topic/plugin-wordpress-mu-domain-mapping-mapping-domains-with-international-characters-idn?replies=3#post-1808113,
+	  props Esteban Bianchi
+
+2010-11-29 16:30  donncha
+
+	* domain_mapping.php: Add menu items in WordPress 3.1's network
+	  admin menu
+
+2010-11-04 17:14  donncha
+
+	* domain_mapping.php: Better markup for the settings page, props
+	  Matt Wiebe, http://somadesign.ca/
+
+2010-11-03 12:06  donncha
+
+	* domain_mapping.php: Get rid of DEBUG mode warnings
+
+2010-11-03 11:57  donncha
+
+	* domain_mapping.php: Added "dm_site_admin()" to support
+	  is_site_admin() and is_super_admin()
+
+2010-11-02 13:39  donncha
+
+	* readme.txt: Plugin can be installed in plugins, updated docs.
+
+2010-11-02 12:58  donncha
+
+	* domain_mapping.php: Make sure the admin_url is SSL if switched to
+	  that. Props Adam Backstrom
+	  (http://twitter.com/#!/abackstrom/statuses/29451159737)
+
+2010-10-29 12:01  donncha
+
+	* Changelog.txt: Updated changelog
+
 2010-10-29 11:57  donncha
 
 	* wordpress-mu-domain-mapping.pot: Updated translation file
