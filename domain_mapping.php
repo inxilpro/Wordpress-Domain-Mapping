@@ -521,6 +521,8 @@ function domain_mapping_siteurl( $setting ) {
 	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
 	static $return_url = array();
 
+	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
+
 	if ( !isset( $return_url[ $wpdb->blogid ] ) ) {
 		$s = $wpdb->suppress_errors();
 
