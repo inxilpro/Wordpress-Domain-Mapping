@@ -1,3 +1,12 @@
+2011-03-01 10:59  donncha
+
+	* domain_mapping.php: Define dmtable to avoid sql problems when
+	  siteurl is used outside of admin, props johnjamesjacoby
+
+2011-02-23 17:33  donncha
+
+	* Changelog.txt: Updated changelog
+
 2011-02-23 17:32  donncha
 
 	* domain_mapping.php, readme.txt: Bump to version 0.5.4
