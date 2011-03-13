@@ -45,8 +45,6 @@ function dm_add_pages() {
 		wp_die( __( "The domain mapping plugin only works if the site is installed in /. This is a limitation of how virtual servers work and is very difficult to work around.", 'wordpress-mu-domain-mapping' ) );
 	}
 
-	maybe_create_db();
-
 	if ( get_site_option( 'dm_user_settings' ) && $current_site->blog_id != $wpdb->blogid && !dm_sunrise_warning( false ) ) {
 		add_management_page(__( 'Domain Mapping', 'wordpress-mu-domain-mapping'), __( 'Domain Mapping', 'wordpress-mu-domain-mapping'), 'manage_options', 'domainmapping', 'dm_manage_page' );
 	}
@@ -267,6 +265,7 @@ function dm_admin_page() {
 	}
 
 	dm_sunrise_warning();
+	maybe_create_db();
 
 	if ( $current_site->path != "/" ) {
 		wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
@@ -401,7 +400,7 @@ function dm_sunrise_warning( $die = true ) {
 			return true;
 
 		if ( dm_site_admin() ) {
-			wp_die( sprintf( __( "Please copy sunrise.php to %s/wp-content/sunrise.php and ensure the SUNRISE definition is in %swp-config.php", 'wordpress-mu-domain-mapping' ), ABSPATH, ABSPATH ) );
+			wp_die( sprintf( __( "Please copy sunrise.php to %s/sunrise.php and ensure the SUNRISE definition is in %swp-config.php", 'wordpress-mu-domain-mapping' ), WP_CONTENT_DIR, ABSPATH ) );
 		} else {
 			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
 		}
