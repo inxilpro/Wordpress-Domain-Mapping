@@ -821,7 +821,7 @@ function ra_domain_mapping_field( $column, $blog_id ) {
 				}
 			}
 		}
-		if(is_array( $maps[ $blog_id ] ) && count( $maps[ $blog_id ] )) {
+		if( !empty( $maps[ $blog_id ] ) && is_array( $maps[ $blog_id ] ) ) {
 			foreach( $maps[ $blog_id ] as $blog ) {
 				echo $blog . '<br />';
 			}
