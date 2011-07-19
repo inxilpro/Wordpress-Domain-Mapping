@@ -5,7 +5,7 @@ Tested up to: 3.2
 Stable tag: 0.5.4.1
 Requires at least: 2.9.2
 
-Map any blog/site on a WordPressMU or WordPress 3.0 network to an external domain.
+Map any blog/site on a WordPressMU or WordPress 3.X network to an external domain.
 
 == Description ==
 This plugin allows users of a WordPress MU site or WordPress 3.0 network to map their blog/site to another domain.
