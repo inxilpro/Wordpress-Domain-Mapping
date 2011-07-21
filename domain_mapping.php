@@ -3,7 +3,7 @@
 Plugin Name: WordPress MU Domain Mapping
 Plugin URI: http://ocaoimh.ie/wordpress-mu-domain-mapping/
 Description: Map any blog on a WordPress website to another domain.
-Version: 0.5.4
+Version: 0.5.4.2
 Author: Donncha O Caoimh
 Author URI: http://ocaoimh.ie/
 */
@@ -542,7 +542,7 @@ function domain_mapping_siteurl( $setting ) {
 
 		$wpdb->suppress_errors( $s );
 		if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-			$_SERVER[ 'HTTPS' ] == 'Off';
+			$_SERVER[ 'HTTPS' ] = 'Off';
 		$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
 		if ( $domain ) {
 			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain  );
