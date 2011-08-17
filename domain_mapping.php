@@ -617,6 +617,9 @@ function domain_mapping_post_content( $post_content ) {
 }
 
 function dm_redirect_admin() {
+	if ( strpos( $_SERVER['REQUEST_URI'], 'wp-admin/admin-ajax.php' ) !== false )
+		return;
+
 	if ( get_site_option( 'dm_redirect_admin' ) ) {
 		// redirect mapped domain admin page to original url
 		$url = get_original_url( 'siteurl' );
