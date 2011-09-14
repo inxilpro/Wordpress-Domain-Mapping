@@ -167,6 +167,11 @@ function dm_domains_admin() {
 			break;
 			case "save":
 				$domain = $wpdb->escape( strtolower( $_POST[ 'domain' ] ) );
+				
+				if ( !is_domain( $_POST['domain'] ) ) {
+					echo '<div class="error fade"><p>' . __( 'The domain name you entered is invalid.', 'wordpress-mu-domain-mapping' ) . '</p></div>';
+					break;
+				}
 			
 				if ( $_POST[ 'blog_id' ] != 0 AND 
 					$_POST[ 'blog_id' ] != 1 AND 
@@ -368,6 +373,12 @@ function dm_handle_actions() {
 		switch( $_POST[ 'action' ] ) {
 			case "add":
 				do_action('dm_handle_actions_add', $domain);
+				
+				if ( !is_domain( $_POST['domain'] ) ) {
+					echo '<div class="error fade"><p>' . __( 'The domain name you entered is invalid.', 'wordpress-mu-domain-mapping' ) . '</p></div>';
+					break;
+				}
+				
 				if( null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain'" ) && null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) ) {
 					if ( $_POST[ 'primary' ] ) {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
