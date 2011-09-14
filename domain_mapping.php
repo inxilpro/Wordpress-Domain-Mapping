@@ -127,6 +127,17 @@ function maybe_create_db() {
 
 }
 
+if (!function_exists('is_domain')) {
+	function is_domain($domain)
+	{
+		if (strlen($domain) > 255) {
+			return false;
+		}
+
+		return preg_match('/^[a-z0-9][a-z0-9-]*[a-z0-9](\.[a-z0-9][a-z0-9-]*[a-z])*$/i', $domain);
+	}
+}
+
 function dm_domains_admin() {
 	global $wpdb, $current_site;
 	if ( false == dm_site_admin() ) { // paranoid? moi?
@@ -155,17 +166,17 @@ function dm_domains_admin() {
 				}
 			break;
 			case "save":
-				$_POST['domain'] = strtolower( $_POST['domain'] );
+				$domain = $wpdb->escape( strtolower( $_POST[ 'domain' ] ) );
 			
 				if ( $_POST[ 'blog_id' ] != 0 AND 
 					$_POST[ 'blog_id' ] != 1 AND 
-					null == $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id != %d AND domain = %s", $_POST[ 'blog_id' ], $_POST[ 'domain' ] ) ) 
+					null == $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id != %d AND domain = %s", $_POST[ 'blog_id' ], $domain ) ) 
 				) {
 					if ( $_POST[ 'orig_domain' ] == '' ) {
-						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `blog_id`, `domain`, `active` ) VALUES ( %d, %s, %d )", $_POST[ 'blog_id' ], $_POST[ 'domain' ], $_POST[ 'active' ] ) );
+						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `blog_id`, `domain`, `active` ) VALUES ( %d, %s, %d )", $_POST[ 'blog_id' ], $domain, $_POST[ 'active' ] ) );
 						echo "<p><strong>" . __( 'Domain Add', 'wordpress-mu-domain-mapping' ) . "</strong></p>";
 					} else {
-						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET blog_id = %d, domain = %s, active = %d WHERE domain = %s", $_POST[ 'blog_id' ], $_POST[ 'domain' ], $_POST[ 'active' ], $_POST[ 'orig_domain' ] ) );
+						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET blog_id = %d, domain = %s, active = %d WHERE domain = %s", $_POST[ 'blog_id' ], $domain, $_POST[ 'active' ], $_POST[ 'orig_domain' ] ) );
 						echo "<p><strong>" . __( 'Domain Updated', 'wordpress-mu-domain-mapping' ) . "</strong></p>";
 					}
 				}
@@ -348,7 +359,7 @@ function dm_handle_actions() {
 	global $wpdb, $parent_file;
 	$url = add_query_arg( array( 'page' => 'domainmapping' ), admin_url( $parent_file ) );
 	if ( !empty( $_POST[ 'action' ] ) ) {
-		$domain = $wpdb->escape( $_POST[ 'domain' ] );
+		$domain = $wpdb->escape( strtolower( $_POST[ 'domain' ] ) );
 		if ( $domain == '' ) {
 			wp_die( "You must enter a domain" );
 		}
