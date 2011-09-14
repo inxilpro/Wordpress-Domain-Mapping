@@ -522,21 +522,33 @@ function dm_manage_page() {
 	echo "</form><br />";
 	
 	if ( get_site_option( 'dm_cname' ) ) {
-		$dm_cname = get_site_option( 'dm_cname');
-		echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add a DNS "CNAME" record pointing to the following domain name for this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_cname ) . "</p>";
-		echo "<p>" . __( 'Google have published <a href="http://www.google.com/support/blogger/bin/answer.py?hl=en&answer=58317" target="_blank">instructions</a> for creating CNAME records on various hosting platforms such as GoDaddy and others.', 'wordpress-mu-domain-mapping' ) . "</p>";
+		do_action('dm_echo_cname_msg');
 	} else {
-		echo "<p>" . __( 'If your domain name includes a hostname like "www", "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL.', 'wordpress-mu-domain-mapping' ) . "</p>";
-		$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
-		if ( strpos( $dm_ipaddress, ',' ) ) {
-			echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_ipaddress ) . "</p>";
-		} else {
-			echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_ipaddress ) . "</p>";
-		}
+		do_action('dm_echo_a_record_msg');
 	}
 	echo '<p>' . sprintf( __( '<strong>Note:</strong> %s', 'wordpress-mu-domain-mapping' ), dm_idn_warning() ) . "</p>";
 	echo "</div>";
 }
+
+function dm_echo_default_cname_msg()
+{
+	$dm_cname = get_site_option( 'dm_cname');
+	echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add a DNS "CNAME" record pointing to the following domain name for this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_cname ) . "</p>";
+	echo "<p>" . __( 'Google have published <a href="http://www.google.com/support/blogger/bin/answer.py?hl=en&answer=58317" target="_blank">instructions</a> for creating CNAME records on various hosting platforms such as GoDaddy and others.', 'wordpress-mu-domain-mapping' ) . "</p>";
+}
+add_action('dm_echo_cname_msg','dm_echo_default_cname_msg');
+
+function dm_echo_default_a_record_msg()
+{
+	echo "<p>" . __( 'If your domain name includes a hostname like "www", "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL.', 'wordpress-mu-domain-mapping' ) . "</p>";
+	$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
+	if ( strpos( $dm_ipaddress, ',' ) ) {
+		echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_ipaddress ) . "</p>";
+	} else {
+		echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add a DNS "A" record pointing at the IP address of this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_ipaddress ) . "</p>";
+	}
+}
+add_action('dm_echo_a_record_msg','dm_echo_default_a_record_msg');
 
 function domain_mapping_siteurl( $setting ) {
 	global $wpdb, $current_blog;
@@ -903,4 +915,6 @@ function dm_filter_site_url($url, $path, $scheme, $blog_id)
 }
 
 add_filter( 'site_url', 'dm_filter_site_url', 20, 4 );
+
+
 
