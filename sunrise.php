@@ -29,6 +29,9 @@ if( $domain_mapping_id ) {
 
 	$current_site = $wpdb->get_row( "SELECT * from {$wpdb->site} WHERE id = '{$current_blog->site_id}' LIMIT 0,1" );
 	$current_site->blog_id = $wpdb->get_var( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain='{$current_site->domain}' AND path='{$current_site->path}'" );
+	if( function_exists( 'get_current_site_name' ) )
+		$current_site = get_current_site_name( $current_site );
+
 	define( 'DOMAIN_MAPPING', 1 );
 }
 ?>

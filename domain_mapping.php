@@ -156,9 +156,10 @@ function dm_domains_admin() {
 	echo '<h2>' . __( 'Domain Mapping: Domains', 'wordpress-mu-domain-mapping' ) . '</h2>';
 	if ( !empty( $_POST[ 'action' ] ) ) {
 		check_admin_referer( 'domain_mapping' );
+		$domain = strtolower( $_POST[ 'domain' ] );
 		switch( $_POST[ 'action' ] ) {
 			case "edit":
-				$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtable} WHERE domain = %s", $_POST[ 'domain' ] ) );
+				$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtable} WHERE domain = %s", $domain ) );
 				if ( $row ) {
 					dm_edit_domain( $row );
 				} else {
@@ -166,13 +167,10 @@ function dm_domains_admin() {
 				}
 			break;
 			case "save":
-				$domain = $wpdb->escape( strtolower( $_POST[ 'domain' ] ) );
-				
-				if ( !is_domain( $_POST['domain'] ) ) {
+				if ( !is_domain( $domain ) ) {
 					echo '<div class="error fade"><p>' . __( 'The domain name you entered is invalid.', 'wordpress-mu-domain-mapping' ) . '</p></div>';
 					break;
 				}
-			
 				if ( $_POST[ 'blog_id' ] != 0 AND 
 					$_POST[ 'blog_id' ] != 1 AND 
 					null == $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id != %d AND domain = %s", $_POST[ 'blog_id' ], $domain ) ) 
@@ -187,22 +185,24 @@ function dm_domains_admin() {
 				}
 			break;
 			case "del":
-				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE domain = %s", $_POST[ 'domain' ] ) );
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE domain = %s", $domain ) );
 				echo "<p><strong>" . __( 'Domain Deleted', 'wordpress-mu-domain-mapping' ) . "</strong></p>";
 			break;
 			case "search":
-				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtable} WHERE domain LIKE %s", $_POST[ 'domain' ] ) );
-				dm_domain_listing( $rows, sprintf( __( "Searching for %s", 'wordpress-mu-domain-mapping' ), esc_html( $_POST[ 'domain' ] ) ) );
+				$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->dmtable} WHERE domain LIKE %s", $domain ) );
+				dm_domain_listing( $rows, sprintf( __( "Searching for %s", 'wordpress-mu-domain-mapping' ), esc_html( $domain ) ) );
 			break;
 		}
 		if ( $_POST[ 'action' ] == 'update' ) {
 			if ( preg_match( '|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$|', $_POST[ 'ipaddress' ] ) )
-				add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+				update_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+
 			if ( ! preg_match( '/(--|\.\.)/', $_POST[ 'cname' ] ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $_POST[ 'cname' ] ) )
-				add_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
+				update_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
 			else
-				add_site_option( 'dm_cname', '' );
-			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
+				update_site_option( 'dm_cname', '' );
+
+			update_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
 		}
 	}
 
@@ -309,18 +309,18 @@ function dm_admin_page() {
 				}
 			}
 			if( $ipok )
-				add_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+				update_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
 			if ( intval( $_POST[ 'always_redirect_admin' ] ) == 0 )
 				$_POST[ 'dm_remote_login' ] = 0; // disable remote login if redirecting to mapped domain
-			add_site_option( 'dm_remote_login', intval( $_POST[ 'dm_remote_login' ] ) );
+			update_site_option( 'dm_remote_login', intval( $_POST[ 'dm_remote_login' ] ) );
 			if ( ! preg_match( '/(--|\.\.)/', $_POST[ 'cname' ] ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $_POST[ 'cname' ] ) )
-				add_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
+				update_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
 			else
-				add_site_option( 'dm_cname', '' );
-			add_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
-			add_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
-			add_site_option( 'dm_user_settings', intval( $_POST[ 'dm_user_settings' ] ) );
-			add_site_option( 'dm_no_primary_domain', intval( $_POST[ 'dm_no_primary_domain' ] ) );
+				update_site_option( 'dm_cname', '' );
+			update_site_option( 'dm_301_redirect', intval( $_POST[ 'permanent_redirect' ] ) );
+			update_site_option( 'dm_redirect_admin', intval( $_POST[ 'always_redirect_admin' ] ) );
+			update_site_option( 'dm_user_settings', intval( $_POST[ 'dm_user_settings' ] ) );
+			update_site_option( 'dm_no_primary_domain', intval( $_POST[ 'dm_no_primary_domain' ] ) );
 		}
 	}
 
@@ -373,12 +373,10 @@ function dm_handle_actions() {
 		switch( $_POST[ 'action' ] ) {
 			case "add":
 				do_action('dm_handle_actions_add', $domain);
-				
 				if ( !is_domain( $_POST['domain'] ) ) {
 					echo '<div class="error fade"><p>' . __( 'The domain name you entered is invalid.', 'wordpress-mu-domain-mapping' ) . '</p></div>';
 					break;
 				}
-				
 				if( null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain'" ) && null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) ) {
 					if ( $_POST[ 'primary' ] ) {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
@@ -653,6 +651,7 @@ function domain_mapping_post_content( $post_content ) {
 }
 
 function dm_redirect_admin() {
+	// don't redirect admin ajax calls
 	if ( strpos( $_SERVER['REQUEST_URI'], 'wp-admin/admin-ajax.php' ) !== false )
 		return;
 
@@ -726,7 +725,7 @@ function remote_logout_loader() {
 	global $current_site, $current_blog, $wpdb;
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
 	if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] == 'Off';
+		$_SERVER[ 'HTTPS' ] = 'Off';
 	$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
 	$hash = get_dm_hash();
 	$key = md5( time() );
@@ -739,9 +738,14 @@ function remote_logout_loader() {
 
 function redirect_to_mapped_domain() {
 	global $current_blog, $wpdb;
+
+	// don't redirect post previews
+	if ( isset( $_GET['preview'] ) && $_GET['preview'] == 'true' )
+		return;
+
 	if ( !isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] = "off";
-	$protocol = ( 'on' == strtolower($_SERVER['HTTPS']) ) ? 'https://' : 'http://';
+		$_SERVER[ 'HTTPS' ] = 'off';
+	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS'] ) ) ? 'https://' : 'http://';
 	$url = domain_mapping_siteurl( false );
 	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
@@ -772,7 +776,7 @@ function remote_login_js() {
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
 	$hash = get_dm_hash();
 	if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] == 'Off';
+		$_SERVER[ 'HTTPS' ] = 'Off';
 	$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
 	if ( $_GET[ 'dm' ] == $hash ) {
 		if ( $_GET[ 'action' ] == 'load' ) {
@@ -818,7 +822,7 @@ function remote_login_js_loader() {
 		return false;
 
 	if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] == 'Off';
+		$_SERVER[ 'HTTPS' ] = 'Off';
 	$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
 	$hash = get_dm_hash();
 	echo "<script src='{$protocol}{$current_site->domain}{$current_site->path}?dm={$hash}&amp;action=load&amp;blogid={$current_blog->blog_id}&amp;siteid={$current_blog->site_id}&amp;t=" . mt_rand() . "&amp;back=" . urlencode( $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) . "' type='text/javascript'></script>";
@@ -915,6 +919,3 @@ function dm_filter_site_url($url, $path, $scheme, $blog_id)
 }
 
 add_filter( 'site_url', 'dm_filter_site_url', 20, 4 );
-
-
-
