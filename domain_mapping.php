@@ -888,34 +888,3 @@ function dm_idn_warning() {
 	return sprintf( __( 'International Domain Names should be in <a href="%s">punycode</a> format.', 'wordpress-mu-domain-mapping' ), "http://api.webnic.cc/idnconversion.html" );
 }
 
-function dm_filter_site_url($url, $path, $scheme, $blog_id)
-{
-	if ($blog_id) {
-		return $url;
-	}
-	
-	if (in_array($scheme, array('login_post', 'login', 'admin')) && get_site_option(' dm_redirect_admin', false)) {
-		$orig_url = trailingslashit(get_original_url( 'siteurl' ));
-		$site_url = trailingslashit(get_option( 'siteurl' ));
-		
-		if ($orig_url != $site_url) {
-			if ( !in_array($scheme, array('http', 'https')) ) {
-				if ( ( 'login_post' == $scheme || 'rpc' == $scheme ) && ( force_ssl_login() || force_ssl_admin() ) )
-					$scheme = 'https';
-				elseif ( ('login' == $scheme) && ( force_ssl_admin() ) )
-					$scheme = 'https';
-				elseif ( ('admin' == $scheme) && force_ssl_admin() )
-					$scheme = 'https';
-				else
-					$scheme = ( is_ssl() ? 'https' : 'http' );
-			}
-			
-			$orig_url = parse_url($orig_url);
-			$url = $scheme . '://' . $orig_url['host'] . '/' . $path;
-		}
-	}
-	
-	return $url;
-}
-
-add_filter( 'site_url', 'dm_filter_site_url', 20, 4 );
