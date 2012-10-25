@@ -327,7 +327,7 @@ function dm_admin_page() {
 	echo '<h3>' . __( 'Domain Mapping Configuration', 'wordpress-mu-domain-mapping' ) . '</h3>';
 	echo '<form method="POST">';
 	echo '<input type="hidden" name="action" value="update" />';
-	echo "<p>" . __( "As a super admin on this network you can set the IP address users need to point their DNS A records at <em>or</em> the domain to point CNAME record at. If you don't know what the IP address is, ping this blog to get it.", 'wordpress-mu-domain-mapping' ) . "</p>";
+	echo "<p>" . __( "As a super admin on this network you can set the IP address users need to point their DNS A records at <em>or</em> the domain to point CNAME record at. If you don't know what the IP address is, ping this site to get it.", 'wordpress-mu-domain-mapping' ) . "</p>";
 	echo "<p>" . __( "If you use round robin DNS or another load balancing technique with more than one IP, enter each address, separating them by commas.", 'wordpress-mu-domain-mapping' ) . "</p>";
 	_e( "Server IP Address: ", 'wordpress-mu-domain-mapping' );
 	echo "<input type='text' name='ipaddress' value='" . get_site_option( 'dm_ipaddress' ) . "' /><br />";
@@ -345,7 +345,7 @@ function dm_admin_page() {
 	echo " /> " . __( 'Remote Login', 'wordpress-mu-domain-mapping' ) . "</li>";
 	echo "<li><input type='checkbox' name='permanent_redirect' value='1' ";
 	echo get_site_option( 'dm_301_redirect' ) == 1 ? "checked='checked'" : "";
-	echo " /> " . __( "Permanent redirect (better for your blogger's pagerank)", 'wordpress-mu-domain-mapping' ) . "</li>";
+	echo " /> " . __( "Permanent redirect (better for your site owner's pagerank)", 'wordpress-mu-domain-mapping' ) . "</li>";
 	echo "<li><input type='checkbox' name='dm_user_settings' value='1' ";
 	echo get_site_option( 'dm_user_settings' ) == 1 ? "checked='checked'" : "";
 	echo " /> " . __( 'User domain mapping page', 'wordpress-mu-domain-mapping' ) . "</li> ";
@@ -477,7 +477,7 @@ function dm_manage_page() {
 	if ( is_array( $domains ) && !empty( $domains ) ) {
 		$orig_url = parse_url( get_original_url( 'siteurl' ) );
 		$domains[] = array( 'domain' => $orig_url[ 'host' ], 'path' => $orig_url[ 'path' ], 'active' => 0 );
-		echo "<h3>" . __( 'Active domains on this blog', 'wordpress-mu-domain-mapping' ) . "</h3>";
+		echo "<h3>" . __( 'Active domains on this site', 'wordpress-mu-domain-mapping' ) . "</h3>";
 		echo '<form method="POST">';
 		echo "<table><tr><th>" . __( 'Primary', 'wordpress-mu-domain-mapping' ) . "</th><th>" . __( 'Domain', 'wordpress-mu-domain-mapping' ) . "</th><th>" . __( 'Delete', 'wordpress-mu-domain-mapping' ) . "</th></tr>\n";
 		$primary_found = 0;
@@ -515,7 +515,7 @@ function dm_manage_page() {
 	echo '<input type="hidden" name="action" value="add" />';
 	echo "<p>http://<input type='text' name='domain' value='' />/<br />";
 	wp_nonce_field( 'domain_mapping' );
-	echo "<input type='checkbox' name='primary' value='1' /> " . __( 'Primary domain for this blog', 'wordpress-mu-domain-mapping' ) . "</p>";
+	echo "<input type='checkbox' name='primary' value='1' /> " . __( 'Primary domain for this site', 'wordpress-mu-domain-mapping' ) . "</p>";
 	echo "<p><input type='submit' class='button-secondary' value='" . __( "Add", 'wordpress-mu-domain-mapping' ) . "' /></p>";
 	echo "</form><br />";
 	
@@ -538,7 +538,7 @@ add_action('dm_echo_cname_msg','dm_echo_default_cname_msg');
 
 function dm_echo_default_a_record_msg()
 {
-	echo "<p>" . __( 'If your domain name includes a hostname like "www", "blog" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this blog URL.', 'wordpress-mu-domain-mapping' ) . "</p>";
+	echo "<p>" . __( 'If your domain name includes a hostname like "www" or some other prefix before the actual domain name you will need to add a CNAME for that hostname in your DNS pointing at this site URL.', 'wordpress-mu-domain-mapping' ) . "</p>";
 	$dm_ipaddress = get_site_option( 'dm_ipaddress', 'IP not set by admin yet.' );
 	if ( strpos( $dm_ipaddress, ',' ) ) {
 		echo "<p>" . sprintf( __( 'If you want to redirect a domain you will need to add DNS "A" records pointing at the IP addresses of this server: <strong>%s</strong>', 'wordpress-mu-domain-mapping' ), $dm_ipaddress ) . "</p>";
